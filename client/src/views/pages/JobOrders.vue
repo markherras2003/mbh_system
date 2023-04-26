@@ -14,13 +14,6 @@ const deleteJobOrdersDialog = ref(false);
 const joborder = ref({});
 const selectedJobOrders = ref(null);
 
-/*const products = ref(null);
-const productDialog = ref(false);
-const deleteProductDialog = ref(false);
-const deleteProductsDialog = ref(false);
-const product = ref({});
-const selectedProducts = ref(null);
-*/
 const dt = ref(null);
 const filters = ref({});
 const submitted = ref(false);
@@ -33,7 +26,6 @@ onBeforeMount(() => {
 });
 onMounted(() => {
     joborderService.getJobOrders().then((data) => (joborders.value = data));
-    //productService.getProducts().then((data) => (products.value = data));
 });
 
 const openNew = () => {
@@ -58,7 +50,7 @@ const saveJobOrder = () => {
             joborder.value.code = createId();
 
             joborders.value.push(joborder.value);
-            toast.add({ severity: 'success', summary: 'Successful', detail: 'Product Created', life: 3000 });
+            toast.add({ severity: 'success', summary: 'Successful', detail: 'Job Order Created', life: 3000 });
         }
         joborderDialog.value = false;
         joborder.value = {};
@@ -111,10 +103,10 @@ const confirmDeleteSelected = () => {
     deleteJobOrdersDialog.value = true;
 };
 const deleteSelectedJobOrders = () => {
-    products.value = products.value.filter((val) => !selectedJobOrders.value.includes(val));
+    joborder.value = joborder.value.filter((val) => !selectedJobOrders.value.includes(val));
     deleteJobOrdersDialog.value = false;
     selectedJobOrders.value = null;
-    toast.add({ severity: 'success', summary: 'Successful', detail: 'Products Deleted', life: 3000 });
+    toast.add({ severity: 'success', summary: 'Successful', detail: 'Job Orders Deleted', life: 3000 });
 };
 
 const initFilters = () => {
@@ -133,7 +125,7 @@ const initFilters = () => {
                     <template v-slot:start>
                         <div class="my-2">
                             <Button label="New" icon="pi pi-plus" class="p-button-success mr-2" @click="openNew" />
-                            <Button label="Delete" icon="pi pi-trash" class="p-button-danger" @click="confirmDeleteSelected" :disabled="!selectedJobOrders || !selectedProducts.length" />
+                            <Button label="Delete" icon="pi pi-trash" class="p-button-danger" @click="confirmDeleteSelected" :disabled="!selectedJobOrders || !selectedJobOrders.length" />
                         </div>
                     </template>
 
@@ -153,7 +145,7 @@ const initFilters = () => {
                     :filters="filters"
                     paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
                     :rowsPerPageOptions="[5, 10, 25]"
-                    currentPageReportTemplate="Showing {first} to {last} of {totalRecords} products"
+                    currentPageReportTemplate="Showing {first} to {last} of {totalRecords} job orders"
                     responsiveLayout="scroll"
                 >
                     <template #header>
@@ -167,10 +159,10 @@ const initFilters = () => {
                     </template>
 
                     <Column selectionMode="multiple" headerStyle="width: 3rem"></Column>
-                    <Column field="id" header="Job Order #" :sortable="true" headerStyle="width:14%; min-width:10rem;">
+                    <Column field="job_id" header="Job Order #" :sortable="true" headerStyle="width:14%; min-width:10rem;">
                         <template #body="slotProps">
                             <span class="p-column-title">Code</span>
-                            {{ slotProps.data.id }}
+                            {{ slotProps.data.job_id }}
                         </template>
                     </Column>
                     <Column field="client_name" header="Client Name" :sortable="true" headerStyle="width:14%; min-width:10rem;">
@@ -242,6 +234,34 @@ const initFilters = () => {
                         <Textarea id="unit_problem" v-model="joborder.unit_problem" required="true" rows="3" cols="20" />
                     </div>
 
+                    <div class="formgrid grid">
+                        <div class="field col">
+                            <label for="resolution">Resolution </label>
+                            <InputText id="resolution" v-model.trim="joborder.resolution" required="true" autofocus :class="{ 'p-invalid': submitted && !joborder.resolution }" />
+                            <small class="p-invalid" v-if="submitted && !joborder.resolution">Resolution is required.</small>
+                        </div>
+
+                        <div class="field col">
+                            <label for="received_by">Received By</label>
+                            <InputText id="received_by" v-model.trim="joborder.received_by" required="true" autofocus :class="{ 'p-invalid': submitted && !joborder.received_by }" />
+                            <small class="p-invalid" v-if="submitted && !joborder.received_by">Received by is required.</small>
+                        </div>
+                    </div>
+
+                    <div class="formgrid grid">
+                        <div class="field col">
+                            <label for="job_order_by">Job Order By</label>
+                            <InputText id="job_order_by" v-model.trim="joborder.job_order_by" required="true" autofocus :class="{ 'p-invalid': submitted && !joborder.job_order_by }" />
+                            <small class="p-invalid" v-if="submitted && !joborder.job_order_by">Job Order By is required.</small>
+                        </div>
+
+                        <div class="field col">
+                            <label for="tech_incharge">Tech incharge</label>
+                            <InputText id="tech_incharge" v-model.trim="joborder.tech_incharge" required="true" autofocus :class="{ 'p-invalid': submitted && !joborder.tech_incharge }" />
+                            <small class="p-invalid" v-if="submitted && !joborder.tech_incharge">Tech incharge is required.</small>
+                        </div>
+                    </div>
+
         
                     <template #footer>
                         <Button label="Cancel" icon="pi pi-times" class="p-button-text" @click="hideDialog" />
@@ -252,7 +272,7 @@ const initFilters = () => {
                 <Dialog v-model:visible="deleteJobOrdersDialog" :style="{ width: '450px' }" header="Confirm" :modal="true">
                     <div class="flex align-items-center justify-content-center">
                         <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem" />
-                        <span v-if="product"
+                        <span v-if="joborder"
                             >Are you sure you want to delete <b>{{ joborder.client_name }}</b
                             >?</span
                         >
@@ -266,7 +286,7 @@ const initFilters = () => {
                 <Dialog v-model:visible="deleteJobOrdersDialog" :style="{ width: '450px' }" header="Confirm" :modal="true">
                     <div class="flex align-items-center justify-content-center">
                         <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem" />
-                        <span v-if="product">Are you sure you want to delete the selected job orders?</span>
+                        <span v-if="joborder">Are you sure you want to delete the selected job orders?</span>
                     </div>
                     <template #footer>
                         <Button label="No" icon="pi pi-times" class="p-button-text" @click="deleteJobOrderDialog = false" />

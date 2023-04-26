@@ -5,6 +5,7 @@ import dotenv from "dotenv";
 import cors from "cors";
 import authRoutes from "./routes/auth.js";
 import userRoutes from "./routes/users.js";
+import joborderRoutes from "./routes/joborder.js";
 
 dotenv.config();
 const app = express();
@@ -22,6 +23,9 @@ app.use("/auth", authRoutes);
 
 // Routers for Users with ID
 app.use("/users", userRoutes);
+
+// Routers for Users with ID
+app.use("/joborder", joborderRoutes);
 
 /* Mongoose Connection to MongoDB */
 const PORT = process.env.PORT || 6001;

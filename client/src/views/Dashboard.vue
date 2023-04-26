@@ -1,12 +1,12 @@
 <script setup>
 import { onMounted, reactive, ref, watch } from 'vue';
-import ProductService from '@/service/ProductService';
+
 import { useLayout } from '@/layout/composables/layout';
 import Dashboard from "../components/Dashboard.vue"
 
 const { isDarkTheme } = useLayout();
 
-const products = ref(null);
+
 const lineData = reactive({
     labels: ['January', 'February', 'March', 'April', 'May', 'June', 'July'],
     datasets: [
@@ -33,15 +33,8 @@ const items = ref([
     { label: 'Remove', icon: 'pi pi-fw pi-minus' }
 ]);
 const lineOptions = ref(null);
-const productService = new ProductService();
 
-onMounted(() => {
-    productService.getProductsSmall().then((data) => (products.value = data));
-});
 
-const formatCurrency = (value) => {
-    return value.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
-};
 const applyLightTheme = () => {
     lineOptions.value = {
         plugins: {
