@@ -72,7 +72,7 @@ const formatCurrency = (value) => {
         <div class="card">
             <h5>Recent Job Orders</h5>
             <DataTable :value="joborders" :rows="5" :paginator="true" responsiveLayout="scroll">
-                <Column field="id" header="Job Order #" :sortable="true" style="width: 35%"></Column>
+                <Column field="job_id" header="Job Order #" :sortable="true" style="width: 35%"></Column>
                 <Column field="client_name" header="Name" :sortable="true" style="width: 35%"></Column>
                 <Column field="unit_description" header="Description" :sortable="true" style="width: 35%"></Column>
                 <Column field="unit_problem" header="Unit Problem" :sortable="true" style="width: 35%"></Column>

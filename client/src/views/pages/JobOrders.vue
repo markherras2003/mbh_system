@@ -3,6 +3,7 @@ import { FilterMatchMode } from 'primevue/api';
 import { ref, onMounted, onBeforeMount } from 'vue';
 import JobOrderService from '@/service/JobOrderService';
 import { useToast } from 'primevue/usetoast';
+import axios from "axios";
 
 const toast = useToast();
 
@@ -39,16 +40,29 @@ const hideDialog = () => {
     submitted.value = false;
 };
 
-const saveJobOrder = () => {
+const saveJobOrder = async  () => {
     submitted.value = true;
     if (joborder.value.client_name && joborder.value.client_name.trim()) {
-        if (joborder.value.id) {
-            joborder.value[findIndexById(joborder.value.id)] = joborder.value;
+        if (joborder.value.job_id) {
+            //joborder.value[findIndexById(joborder.value.job_id)] = joborder.value;
+            const index = findIndexById(joborder.value.job_id);
+  const updatedJobOrder = { ...joborders.value[index], ...joborder.value };
+  joborders.value.splice(index, 1, updatedJobOrder);
             toast.add({ severity: 'success', summary: 'Successful', detail: 'Job Order Updated', life: 3000 });
         } else {
-            joborder.value.id = createId();
-            joborder.value.code = createId();
-
+            joborder.value.job_id = createId();
+            const response = await axios.post(`/joborder`, {
+                client_name: joborder.value.client_name,
+                unit_description: joborder.value.unit_description,
+                unit_model: joborder.value.unit_model,
+                unit_accessories: joborder.value.unit_accessories,
+                unit_problem: joborder.value.unit_problem,
+                resolution: joborder.value.resolution,
+                received_by: joborder.value.received_by,
+                job_order_by: joborder.value.job_order_by,
+                tech_incharge: joborder.value.tech_incharge,
+            });
+            console.log(response);
             joborders.value.push(joborder.value);
             toast.add({ severity: 'success', summary: 'Successful', detail: 'Job Order Created', life: 3000 });
         }
@@ -92,7 +106,7 @@ const createId = () => {
     for (let i = 0; i < 5; i++) {
         id += chars.charAt(Math.floor(Math.random() * chars.length));
     }
-    return id;
+    return 'new#-'+id;
 };
 
 const exportCSV = () => {
@@ -145,7 +159,7 @@ const initFilters = () => {
                     :filters="filters"
                     paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
                     :rowsPerPageOptions="[5, 10, 25]"
-                    currentPageReportTemplate="Showing {first} to {last} of {totalRecords} job orders"
+                    currentPageReportTemplate="Showing {first} to {last} of {totalRecords} Job Orders"
                     responsiveLayout="scroll"
                 >
                     <template #header>
@@ -161,7 +175,7 @@ const initFilters = () => {
                     <Column selectionMode="multiple" headerStyle="width: 3rem"></Column>
                     <Column field="job_id" header="Job Order #" :sortable="true" headerStyle="width:14%; min-width:10rem;">
                         <template #body="slotProps">
-                            <span class="p-column-title">Code</span>
+                            <span class="p-column-title">Job Order #</span>
                             {{ slotProps.data.job_id }}
                         </template>
                     </Column>

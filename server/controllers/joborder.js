@@ -74,3 +74,42 @@ export const saveJobOrder = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
+
+
+/* Update Job Order Execution */
+export const updateJobOrder = async (req, res) => {
+  try {
+    const {
+      client_name,
+      unit_description,
+      unit_model,
+      unit_accessories,
+      unit_problem,
+      resolution,
+      received_by,
+      job_order_by,
+      tech_incharge,
+    } = req.body;
+
+    const updateJobOrders = {
+      client_name,
+      unit_description,
+      unit_model,
+      unit_accessories,
+      unit_problem,
+      resolution,
+      received_by,
+      job_order_by,
+      tech_incharge,
+    };
+
+    const saveJob = await JobOrder.findByIdAndUpdate(req.params._id, updateJobOrders, { new: true });
+    if (!saveJob) {
+      // Return an error response if the user is not found
+      return res.status(404).json({ message: 'User not found' });
+    }
+    res.status(200).json(saveJob);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
