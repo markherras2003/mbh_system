@@ -136,6 +136,13 @@ const router = createRouter({
                     name: 'crud',
                     component: () => import('@/views/pages/Crud.vue')
                 },
+
+                {
+                    path: '/pages/joborders',
+                    name: 'joborders',
+                    component: () => import('@/views/pages/JobOrders.vue')
+                },
+
                 {
                     path: '/documentation',
                     name: 'documentation',

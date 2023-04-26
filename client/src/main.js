@@ -1,6 +1,9 @@
 import { createApp } from 'vue';
 import App from './App.vue';
 import router from './router';
+import './axios'
+import store from './vuex'
+
 
 import PrimeVue from 'primevue/config';
 import AutoComplete from 'primevue/autocomplete';
@@ -108,6 +111,7 @@ import '@/assets/styles.scss';
 const app = createApp(App);
 
 app.use(router);
+app.use(store)
 app.use(PrimeVue, { ripple: true });
 app.use(ToastService);
 app.use(DialogService);
@@ -118,9 +122,10 @@ app.directive('badge', BadgeDirective);
 app.directive('ripple', Ripple);
 app.directive('styleclass', StyleClass);
 
+
+/* Prime Vue Component Initialization */
 app.component('CodeHighlight', CodeHighlight);
 app.component('BlockViewer', BlockViewer);
-
 app.component('Accordion', Accordion);
 app.component('AccordionTab', AccordionTab);
 app.component('AutoComplete', AutoComplete);
