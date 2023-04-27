@@ -123,7 +123,7 @@ export const deleteJobOrder = async (req, res) => {
   // Return an error response if the user is not found
   return res.status(404).json({ message: 'Job Order Not not found' });
   }
-  res.status(200).json({ message: 'Job Order Deleted successfully' });
+  res.status(200).json({ message: 'Job Deleted successfully' });
   } catch (err) {
   res.status(500).json({ error: err.message });
   }

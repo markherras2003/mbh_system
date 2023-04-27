@@ -41,9 +41,9 @@ const hideDialog = () => {
 const saveJobOrder = async () => {
     submitted.value = true;
     if (joborder.value.client_name && joborder.value.client_name.trim()) {
-        if (joborder.value.job_id) {
-            //joborders.value[findIndexById(joborder.value.id)] = joborder.value;
+        if (joborder.value.id) {
             const response = await axios.put(`/joborder/${joborder.value.id}`, {
+                id:joborder.value.id,
                 client_name: joborder.value.client_name,
                 unit_description: joborder.value.unit_description,
                 unit_model: joborder.value.unit_model,
@@ -58,10 +58,13 @@ const saveJobOrder = async () => {
             if (index > -1) {
                 joborders.value[index] = joborder.value;
             }
+            // Set joborder.value to response data
+            joborder.value = response.data;
             toast.add({ severity: 'success', summary: 'Successful', detail: 'Job Order Updated', life: 3000 });
         } else {
             joborder.value.job_id = generateJobOrderID();
             const response = await axios.post(`/joborder`, {
+                job_id: joborder.value.job_id,
                 client_name: joborder.value.client_name,
                 unit_description: joborder.value.unit_description,
                 unit_model: joborder.value.unit_model,
@@ -72,17 +75,23 @@ const saveJobOrder = async () => {
                 job_order_by: joborder.value.job_order_by,
                 tech_incharge: joborder.value.tech_incharge
             });
+            // Set joborder.value to response data
+            joborder.value = response.data;
+            joborder.value.id = joborder.value._id;
+            //alert(joborder.value.id);
             joborders.value.push(joborder.value);
             toast.add({ severity: 'success', summary: 'Successful', detail: 'Job Order Created', life: 3000 });
         }
         joborderDialog.value = false;
+        // Clear joborder.value
         joborder.value = {};
     }
 };
 
 const editJobOrder = (editJobOrder) => {
     joborder.value = { ...editJobOrder };
-    console.log(joborder);
+    //alert(joborder.value.id);
+    //console.log(joborder);
     joborderDialog.value = true;
 };
 
