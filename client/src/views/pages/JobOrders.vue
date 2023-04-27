@@ -3,12 +3,11 @@ import { FilterMatchMode } from 'primevue/api';
 import { ref, onMounted, onBeforeMount } from 'vue';
 import JobOrderService from '@/service/JobOrderService';
 import { useToast } from 'primevue/usetoast';
-import axios from "axios";
+import axios from 'axios';
 
 const toast = useToast();
 
-
-const joborders = ref (null);
+const joborders = ref(null);
 const joborderDialog = ref(false);
 const deleteJobOrderDialog = ref(false);
 const deleteJobOrdersDialog = ref(false);
@@ -18,7 +17,6 @@ const selectedJobOrders = ref(null);
 const dt = ref(null);
 const filters = ref({});
 const submitted = ref(false);
-
 
 const joborderService = new JobOrderService();
 
@@ -40,14 +38,14 @@ const hideDialog = () => {
     submitted.value = false;
 };
 
-const saveJobOrder = async  () => {
+const saveJobOrder = async () => {
     submitted.value = true;
     if (joborder.value.client_name && joborder.value.client_name.trim()) {
         if (joborder.value.job_id) {
             //joborder.value[findIndexById(joborder.value.job_id)] = joborder.value;
             const index = findIndexById(joborder.value.job_id);
-  const updatedJobOrder = { ...joborders.value[index], ...joborder.value };
-  joborders.value.splice(index, 1, updatedJobOrder);
+            const updatedJobOrder = { ...joborders.value[index], ...joborder.value };
+            joborders.value.splice(index, 1, updatedJobOrder);
             toast.add({ severity: 'success', summary: 'Successful', detail: 'Job Order Updated', life: 3000 });
         } else {
             joborder.value.job_id = createId();
@@ -60,7 +58,7 @@ const saveJobOrder = async  () => {
                 resolution: joborder.value.resolution,
                 received_by: joborder.value.received_by,
                 job_order_by: joborder.value.job_order_by,
-                tech_incharge: joborder.value.tech_incharge,
+                tech_incharge: joborder.value.tech_incharge
             });
             console.log(response);
             joborders.value.push(joborder.value);
@@ -83,7 +81,8 @@ const confirmDeleteJobOrder = (editJobOrder) => {
 };
 
 const deleteJobOrder = () => {
-    joborders.value = joborders.value.filter((val) => val.id !== joborder.value.id);
+    alert('test');
+    joborders.value = joborders.value.filter((val) => val.job_id !== joborder.value.job_id);
     deleteJobOrderDialog.value = false;
     joborder.value = {};
     toast.add({ severity: 'success', summary: 'Successful', detail: 'Job Order Deleted', life: 3000 });
@@ -106,7 +105,7 @@ const createId = () => {
     for (let i = 0; i < 5; i++) {
         id += chars.charAt(Math.floor(Math.random() * chars.length));
     }
-    return 'new#-'+id;
+    return 'new#-' + id;
 };
 
 const exportCSV = () => {
@@ -117,7 +116,7 @@ const confirmDeleteSelected = () => {
     deleteJobOrdersDialog.value = true;
 };
 const deleteSelectedJobOrders = () => {
-    joborder.value = joborder.value.filter((val) => !selectedJobOrders.value.includes(val));
+    joborders.value = joborders.value.filter((val) => !selectedJobOrders.value.includes(val));
     deleteJobOrdersDialog.value = false;
     selectedJobOrders.value = null;
     toast.add({ severity: 'success', summary: 'Successful', detail: 'Job Orders Deleted', life: 3000 });
@@ -217,7 +216,6 @@ const initFilters = () => {
                     </Column>
                 </DataTable>
 
-
                 <Dialog v-model:visible="joborderDialog" :style="{ width: '600px' }" header="Job Order Details" :modal="true" class="p-fluid">
                     <div class="field">
                         <label for="name">Client Name</label>
@@ -276,14 +274,13 @@ const initFilters = () => {
                         </div>
                     </div>
 
-        
                     <template #footer>
                         <Button label="Cancel" icon="pi pi-times" class="p-button-text" @click="hideDialog" />
                         <Button label="Save" icon="pi pi-check" class="p-button-text" @click="saveJobOrder" />
                     </template>
                 </Dialog>
 
-                <Dialog v-model:visible="deleteJobOrdersDialog" :style="{ width: '450px' }" header="Confirm" :modal="true">
+                <Dialog v-model:visible="deleteJobOrderDialog" :style="{ width: '450px' }" header="Confirm" :modal="true">
                     <div class="flex align-items-center justify-content-center">
                         <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem" />
                         <span v-if="joborder"
@@ -303,12 +300,10 @@ const initFilters = () => {
                         <span v-if="joborder">Are you sure you want to delete the selected job orders?</span>
                     </div>
                     <template #footer>
-                        <Button label="No" icon="pi pi-times" class="p-button-text" @click="deleteJobOrderDialog = false" />
+                        <Button label="No" icon="pi pi-times" class="p-button-text" @click="deleteJobOrdersDialog = false" />
                         <Button label="Yes" icon="pi pi-check" class="p-button-text" @click="deleteSelectedJobOrders" />
                     </template>
                 </Dialog>
-
-              
             </div>
         </div>
     </div>
