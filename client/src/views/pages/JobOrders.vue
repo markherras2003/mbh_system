@@ -43,7 +43,7 @@ const saveJobOrder = async () => {
     if (joborder.value.client_name && joborder.value.client_name.trim()) {
         if (joborder.value.id) {
             const response = await axios.put(`/joborder/${joborder.value.id}`, {
-                id:joborder.value.id,
+                id: joborder.value.id,
                 client_name: joborder.value.client_name,
                 unit_description: joborder.value.unit_description,
                 unit_model: joborder.value.unit_model,
@@ -125,23 +125,23 @@ const confirmDeleteSelected = () => {
 };
 
 const deleteSelectedJobOrders = async () => {
-  try {
-    // Loop through each selected job order and send a DELETE request
-    for (const jobOrder of selectedJobOrders.value) {
-      const response = await axios.delete(`/joborder/${jobOrder.id}`);
-      if (response.status === 200) {
-        // Remove the deleted job order from the joborders array
-        joborders.value = joborders.value.filter((val) => val.job_id !== jobOrder.job_id);
-      }
+    try {
+        // Loop through each selected job order and send a DELETE request
+        for (const jobOrder of selectedJobOrders.value) {
+            const response = await axios.delete(`/joborder/${jobOrder.id}`);
+            if (response.status === 200) {
+                // Remove the deleted job order from the joborders array
+                joborders.value = joborders.value.filter((val) => val.job_id !== jobOrder.job_id);
+            }
+        }
+        // Clear the selected job orders and display a success toast notification
+        selectedJobOrders.value = null;
+        deleteJobOrdersDialog.value = false;
+        toast.add({ severity: 'success', summary: 'Successful', detail: 'Job Orders Deleted', life: 3000 });
+    } catch (error) {
+        console.error(error);
+        toast.add({ severity: 'error', summary: 'Error', detail: 'Failed to delete job orders', life: 3000 });
     }
-    // Clear the selected job orders and display a success toast notification
-    selectedJobOrders.value = null;
-    deleteJobOrdersDialog.value = false;
-    toast.add({ severity: 'success', summary: 'Successful', detail: 'Job Orders Deleted', life: 3000 });
-  } catch (error) {
-    console.error(error);
-    toast.add({ severity: 'error', summary: 'Error', detail: 'Failed to delete job orders', life: 3000 });
-  }
 };
 
 const initFilters = () => {
