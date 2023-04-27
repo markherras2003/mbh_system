@@ -46,6 +46,7 @@ const hideDialog = () => {
 
 const saveProduct = () => {
     submitted.value = true;
+    console.log(product.value.id);
     if (product.value.name && product.value.name.trim() && product.value.price) {
         if (product.value.id) {
             product.value.inventoryStatus = product.value.inventoryStatus.value ? product.value.inventoryStatus.value : product.value.inventoryStatus;
@@ -60,8 +61,10 @@ const saveProduct = () => {
             toast.add({ severity: 'success', summary: 'Successful', detail: 'Product Created', life: 3000 });
         }
         productDialog.value = false;
+        console.log(product);
         product.value = {};
     }
+
 };
 
 const editProduct = (editProduct) => {

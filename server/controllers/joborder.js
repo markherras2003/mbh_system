@@ -106,10 +106,25 @@ export const updateJobOrder = async (req, res) => {
     const saveJob = await JobOrder.findByIdAndUpdate(req.params._id, updateJobOrders, { new: true });
     if (!saveJob) {
       // Return an error response if the user is not found
-      return res.status(404).json({ message: 'User not found' });
+      return res.status(404).json({ message: 'Job Order not found' });
     }
     res.status(200).json(saveJob);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 };
+
+
+/* Delete User Execution */
+export const deleteJobOrder = async (req, res) => {
+  try {
+  const deletedJob = await JobOrder.findByIdAndDelete(req.params._id);
+  if (!deletedJob) {
+  // Return an error response if the user is not found
+  return res.status(404).json({ message: 'Job Order Not not found' });
+  }
+  res.status(200).json({ message: 'Job Order Deleted successfully' });
+  } catch (err) {
+  res.status(500).json({ error: err.message });
+  }
+  };

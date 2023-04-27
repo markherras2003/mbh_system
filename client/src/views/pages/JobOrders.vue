@@ -42,13 +42,26 @@ const saveJobOrder = async () => {
     submitted.value = true;
     if (joborder.value.client_name && joborder.value.client_name.trim()) {
         if (joborder.value.job_id) {
-            //joborder.value[findIndexById(joborder.value.job_id)] = joborder.value;
-            const index = findIndexById(joborder.value.job_id);
-            const updatedJobOrder = { ...joborders.value[index], ...joborder.value };
-            joborders.value.splice(index, 1, updatedJobOrder);
+            //joborders.value[findIndexById(joborder.value.id)] = joborder.value;
+            const response = await axios.put(`/joborder/${joborder.value.id}`, {
+                client_name: joborder.value.client_name,
+                unit_description: joborder.value.unit_description,
+                unit_model: joborder.value.unit_model,
+                unit_accessories: joborder.value.unit_accessories,
+                unit_problem: joborder.value.unit_problem,
+                resolution: joborder.value.resolution,
+                received_by: joborder.value.received_by,
+                job_order_by: joborder.value.job_order_by,
+                tech_incharge: joborder.value.tech_incharge
+            });
+
+            let index = joborders.value.findIndex((job) => job.job_id === joborder.value.job_id);
+            if (index > -1) {
+                joborders.value[index] = joborder.value;
+            }
             toast.add({ severity: 'success', summary: 'Successful', detail: 'Job Order Updated', life: 3000 });
         } else {
-            joborder.value.job_id = createId();
+            joborder.value.job_id = generateJobOrderID();
             const response = await axios.post(`/joborder`, {
                 client_name: joborder.value.client_name,
                 unit_description: joborder.value.unit_description,
@@ -60,7 +73,6 @@ const saveJobOrder = async () => {
                 job_order_by: joborder.value.job_order_by,
                 tech_incharge: joborder.value.tech_incharge
             });
-            console.log(response);
             joborders.value.push(joborder.value);
             toast.add({ severity: 'success', summary: 'Successful', detail: 'Job Order Created', life: 3000 });
         }
@@ -71,7 +83,7 @@ const saveJobOrder = async () => {
 
 const editJobOrder = (editJobOrder) => {
     joborder.value = { ...editJobOrder };
-    console.log(joborder.value);
+    console.log(joborder);
     joborderDialog.value = true;
 };
 
@@ -80,12 +92,15 @@ const confirmDeleteJobOrder = (editJobOrder) => {
     deleteJobOrderDialog.value = true;
 };
 
-const deleteJobOrder = () => {
-    alert('test');
-    joborders.value = joborders.value.filter((val) => val.job_id !== joborder.value.job_id);
-    deleteJobOrderDialog.value = false;
-    joborder.value = {};
-    toast.add({ severity: 'success', summary: 'Successful', detail: 'Job Order Deleted', life: 3000 });
+const deleteJobOrder = async () => {
+    const response = await axios.delete(`/joborder/${joborder.value.id}`);
+    if (response.status === 200) {
+        joborders.value = joborders.value.filter((val) => val.job_id !== joborder.value.job_id);
+        deleteJobOrderDialog.value = false;
+        joborder.value = {};
+        toast.add({ severity: 'success', summary: 'Successful', detail: 'Job Order Deleted', life: 3000 });
+    }
+    //joborders.value = joborders.value.filter((val) => val.job_id !== joborder.value.job_id);
 };
 
 const findIndexById = (id) => {
@@ -107,6 +122,11 @@ const createId = () => {
     }
     return 'new#-' + id;
 };
+
+function generateJobOrderID() {
+    const lastID = joborders.value.length ? joborders.value[joborders.value.length - 1].job_id : 0;
+    return lastID + 1;
+}
 
 const exportCSV = () => {
     dt.value.exportCSV();
@@ -158,7 +178,7 @@ const initFilters = () => {
                     :filters="filters"
                     paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
                     :rowsPerPageOptions="[5, 10, 25]"
-                    currentPageReportTemplate="Showing {first} to {last} of {totalRecords} Job Orders"
+                    currentPageReportTemplate="Showing {first} to {last} of {totalRecords} joborders"
                     responsiveLayout="scroll"
                 >
                     <template #header>
