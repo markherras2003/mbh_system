@@ -54,7 +54,6 @@ const saveJobOrder = async () => {
                 job_order_by: joborder.value.job_order_by,
                 tech_incharge: joborder.value.tech_incharge
             });
-
             let index = joborders.value.findIndex((job) => job.job_id === joborder.value.job_id);
             if (index > -1) {
                 joborders.value[index] = joborder.value;
@@ -103,26 +102,6 @@ const deleteJobOrder = async () => {
     //joborders.value = joborders.value.filter((val) => val.job_id !== joborder.value.job_id);
 };
 
-const findIndexById = (id) => {
-    let index = -1;
-    for (let i = 0; i < joborders.value.length; i++) {
-        if (joborders.value[i].id === id) {
-            index = i;
-            break;
-        }
-    }
-    return index;
-};
-
-const createId = () => {
-    let id = '';
-    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-    for (let i = 0; i < 5; i++) {
-        id += chars.charAt(Math.floor(Math.random() * chars.length));
-    }
-    return 'new#-' + id;
-};
-
 function generateJobOrderID() {
     const lastID = joborders.value.length ? joborders.value[joborders.value.length - 1].job_id : 0;
     return lastID + 1;
@@ -135,11 +114,25 @@ const exportCSV = () => {
 const confirmDeleteSelected = () => {
     deleteJobOrdersDialog.value = true;
 };
-const deleteSelectedJobOrders = () => {
-    joborders.value = joborders.value.filter((val) => !selectedJobOrders.value.includes(val));
-    deleteJobOrdersDialog.value = false;
+
+const deleteSelectedJobOrders = async () => {
+  try {
+    // Loop through each selected job order and send a DELETE request
+    for (const jobOrder of selectedJobOrders.value) {
+      const response = await axios.delete(`/joborder/${jobOrder.id}`);
+      if (response.status === 200) {
+        // Remove the deleted job order from the joborders array
+        joborders.value = joborders.value.filter((val) => val.job_id !== jobOrder.job_id);
+      }
+    }
+    // Clear the selected job orders and display a success toast notification
     selectedJobOrders.value = null;
+    deleteJobOrdersDialog.value = false;
     toast.add({ severity: 'success', summary: 'Successful', detail: 'Job Orders Deleted', life: 3000 });
+  } catch (error) {
+    console.error(error);
+    toast.add({ severity: 'error', summary: 'Error', detail: 'Failed to delete job orders', life: 3000 });
+  }
 };
 
 const initFilters = () => {
@@ -178,7 +171,7 @@ const initFilters = () => {
                     :filters="filters"
                     paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
                     :rowsPerPageOptions="[5, 10, 25]"
-                    currentPageReportTemplate="Showing {first} to {last} of {totalRecords} joborders"
+                    currentPageReportTemplate="Showing {first} to {last} of {totalRecords} Job Orders"
                     responsiveLayout="scroll"
                 >
                     <template #header>
