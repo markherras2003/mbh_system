@@ -1,5 +1,5 @@
 <script setup>
-import { FilterMatchMode } from 'primevue/api';
+import { FilterMatchMode , FilterOperator  } from 'primevue/api';
 import { ref, onMounted, onBeforeMount } from 'vue';
 import JobOrderService from '@/service/JobOrderService';
 import { useToast } from 'primevue/usetoast';
@@ -153,7 +153,8 @@ const deleteSelectedJobOrders = async () => {
 
 const initFilters = () => {
     filters.value = {
-        global: { value: null, matchMode: FilterMatchMode.CONTAINS }
+        global: { value: null, matchMode: FilterMatchMode.CONTAINS },
+        client_name: { operator: FilterOperator.AND, constraints: [{ value: null, matchMode: FilterMatchMode.STARTS_WITH }] },
     };
 };
 </script>
@@ -185,10 +186,13 @@ const initFilters = () => {
                     :paginator="true"
                     :rows="10"
                     :filters="filters"
+                    v-model:filters="filters"
+                    filterDisplay="menu"
                     paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
                     :rowsPerPageOptions="[5, 10, 25]"
                     currentPageReportTemplate="Showing {first} to {last} of {totalRecords} Job Orders"
                     responsiveLayout="scroll"
+                    :globalFilterFields="['client_name']"
                 >
                     <template #header>
                         <div class="flex flex-column md:flex-row md:justify-content-between md:align-items-center">
@@ -211,6 +215,9 @@ const initFilters = () => {
                         <template #body="slotProps">
                             <span class="p-column-title">Client Name</span>
                             {{ slotProps.data.client_name }}
+                        </template>
+                        <template #filter="{ filterModel }">
+                            <InputText type="text" v-model="filterModel.value" class="p-column-filter" placeholder="Search by name" />
                         </template>
                     </Column>
                     <Column field="unit_description" header="Unit Description" :sortable="true" headerStyle="width:14%; min-width:8rem;">
