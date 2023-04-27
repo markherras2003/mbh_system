@@ -23,8 +23,14 @@ const joborderService = new JobOrderService();
 onBeforeMount(() => {
     initFilters();
 });
-onMounted(() => {
-    joborderService.getJobOrders().then((data) => (joborders.value = data));
+
+onMounted(async () => {
+    try {
+        const data = await joborderService.getJobOrders();
+        joborders.value = data;
+    } catch (error) {
+        console.error(error);
+    }
 });
 
 const openNew = () => {
@@ -40,58 +46,59 @@ const hideDialog = () => {
 
 const saveJobOrder = async () => {
     submitted.value = true;
-    if (joborder.value.client_name && joborder.value.client_name.trim()) {
-        if (joborder.value.id) {
-            const response = await axios.put(`/joborder/${joborder.value.id}`, {
-                id: joborder.value.id,
-                client_name: joborder.value.client_name,
-                unit_description: joborder.value.unit_description,
-                unit_model: joborder.value.unit_model,
-                unit_accessories: joborder.value.unit_accessories,
-                unit_problem: joborder.value.unit_problem,
-                resolution: joborder.value.resolution,
-                received_by: joborder.value.received_by,
-                job_order_by: joborder.value.job_order_by,
-                tech_incharge: joborder.value.tech_incharge
-            });
-            let index = joborders.value.findIndex((job) => job.job_id === joborder.value.job_id);
-            if (index > -1) {
-                joborders.value[index] = joborder.value;
-            }
-            // Set joborder.value to response data
-            joborder.value = response.data;
-            toast.add({ severity: 'success', summary: 'Successful', detail: 'Job Order Updated', life: 3000 });
-        } else {
-            joborder.value.job_id = generateJobOrderID();
-            const response = await axios.post(`/joborder`, {
-                job_id: joborder.value.job_id,
-                client_name: joborder.value.client_name,
-                unit_description: joborder.value.unit_description,
-                unit_model: joborder.value.unit_model,
-                unit_accessories: joborder.value.unit_accessories,
-                unit_problem: joborder.value.unit_problem,
-                resolution: joborder.value.resolution,
-                received_by: joborder.value.received_by,
-                job_order_by: joborder.value.job_order_by,
-                tech_incharge: joborder.value.tech_incharge
-            });
-            // Set joborder.value to response data
-            joborder.value = response.data;
-            joborder.value.id = joborder.value._id;
-            //alert(joborder.value.id);
-            joborders.value.push(joborder.value);
-            toast.add({ severity: 'success', summary: 'Successful', detail: 'Job Order Created', life: 3000 });
-        }
-        joborderDialog.value = false;
-        // Clear joborder.value
-        joborder.value = {};
+
+    let { id, job_id, client_name, unit_description, unit_model, unit_accessories, unit_problem, resolution, received_by, job_order_by, tech_incharge } = joborder.value || {};
+
+    if (!client_name && !client_name.tirm()) {
+        return null;
     }
+
+    if (id) {
+        const response = await axios.put(`/joborder/${id}`, {
+            id,
+            client_name,
+            unit_description,
+            unit_model,
+            unit_accessories,
+            unit_problem,
+            resolution,
+            received_by,
+            job_order_by,
+            tech_incharge
+        });
+        let index = joborders.value.findIndex((job) => job.job_id === job_id);
+        if (index > -1) {
+            joborders.value[index] = joborder.value;
+        }
+        joborder.value = response.data;
+        toast.add({ severity: 'success', summary: 'Successful', detail: 'Job Order Updated', life: 3000 });
+    } else {
+        job_id = generateJobOrderID();
+        const response = await axios.post(`/joborder`, {
+            job_id,
+            client_name,
+            unit_description,
+            unit_model,
+            unit_accessories,
+            unit_problem,
+            resolution,
+            received_by,
+            job_order_by,
+            tech_incharge
+        });
+        // Set joborder.value to response data
+        joborder.value = response.data;
+        joborder.value.id = joborder.value._id;
+        joborders.value.push(joborder.value);
+        toast.add({ severity: 'success', summary: 'Successful', detail: 'Job Order Created', life: 3000 });
+    }
+    joborderDialog.value = false;
+    // Clear joborder.value
+    joborder.value = {};
 };
 
 const editJobOrder = (editJobOrder) => {
     joborder.value = { ...editJobOrder };
-    //alert(joborder.value.id);
-    //console.log(joborder);
     joborderDialog.value = true;
 };
 
@@ -101,14 +108,14 @@ const confirmDeleteJobOrder = (editJobOrder) => {
 };
 
 const deleteJobOrder = async () => {
-    const response = await axios.delete(`/joborder/${joborder.value.id}`);
+    let { id, job_id } = joborder.value || {};
+    const response = await axios.delete(`/joborder/${id}`);
     if (response.status === 200) {
-        joborders.value = joborders.value.filter((val) => val.job_id !== joborder.value.job_id);
+        joborders.value = joborders.value.filter((val) => val.job_id !== job_id);
         deleteJobOrderDialog.value = false;
         joborder.value = {};
         toast.add({ severity: 'success', summary: 'Successful', detail: 'Job Order Deleted', life: 3000 });
     }
-    //joborders.value = joborders.value.filter((val) => val.job_id !== joborder.value.job_id);
 };
 
 function generateJobOrderID() {
