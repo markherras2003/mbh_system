@@ -14,7 +14,9 @@
         "primeicons": "^6.0.1",
         "primevue": "3.26.1",
         "vue": "^3.2.41",
+        "vue-html-to-paper": "^1.4.4",
         "vue-router": "^4.1.5",
+        "vue3-print-nb": "^0.1.4",
         "vuex": "^4.1.0"
     },
     "devDependencies": {

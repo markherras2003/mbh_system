@@ -1,9 +1,11 @@
 <script setup>
-import { FilterMatchMode , FilterOperator  } from 'primevue/api';
+import { FilterMatchMode, FilterOperator } from 'primevue/api';
 import { ref, onMounted, onBeforeMount } from 'vue';
 import JobOrderService from '@/service/JobOrderService';
 import { useToast } from 'primevue/usetoast';
 import axios from 'axios';
+import InputText from 'primevue/inputtext';
+import JobOrderPrintingView from '@/components/printing/JobOrder.vue';
 
 const toast = useToast();
 
@@ -44,12 +46,113 @@ const hideDialog = () => {
     submitted.value = false;
 };
 
+const print = (printData) => {
+    joborder.value = printData;
+
+    let { id, job_id, client_name, unit_description, 
+        unit_model, unit_accessories, unit_problem, 
+        resolution, received_by, job_order_by, 
+        tech_incharge, phone_no, createdAt } = joborder.value || {};
+    console.log('print');
+    console.log(printData);
+    const extraCss = 'https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css';
+    const extraHead = '<meta http-equiv="Content-Language"content="zh-cn"/>';
+    const extraScripts = 'https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js';
+    const styles = '@page { size: A4 landscape;} .text-decoration-underline-full-width { background:red;display: inline-block; text-decoration: underline; } ';
+    const content = `<html>
+        <head>
+            <meta charset="UTF-8" />
+            <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+            <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+            <link rel="stylesheet" href="${extraCss}" />
+            ${extraHead}
+            <style>
+                ${styles}
+            </style>
+            <body>
+                <div class="row">
+            <h1 class="mb-3 pb-3 border-bottom"></h1>
+            <div class="col-sm-6">
+                <h5>MBH Computech</h5>
+                <h6>Door A17 & A18 Yoho Center</h6>
+                <h6>Sanito, Ipil, Zamboanga Sibugay 7001</h6>
+                <h6>(062) 957-5132 / 09176252540</h6>
+                <h6>TIN# 949-007-949-000</h6>
+                <h5 class="pb-2">J.O #: <u class="text-decoration-underline">${job_id}</u></h5>
+                <div class="mb-3"></div>
+            </div>
+            <div class="col-sm-3"></div>
+            <div class="col-sm-3 text-end">
+                <img src="layout/images/logo.jpg" height="150" width="150" />
+            </div>
+        </div>
+        <div class="mb-3"></div>
+        <div class="row">
+            <div class="col-sm-3">
+                <h6>CLIENT NAME:</h6>
+                <h6>UNIT DESCRIPTION:</h6>
+                <h6>MODEL:</h6>
+                <h6>ACCESSORIES:</h6>
+                <h6>PROBLEM:</h6>
+                <h6>RESOLUTION:</h6>
+                <h6>RECEIVED BY:</h6>
+                <h6>JOB ORDER BY:</h6>
+                <h6>TECHNICIAN INCHARGE:</h6>
+            </div>
+            <div class="col-sm-3 text-left" style="margin-left: -25px">
+                <h6><u class="text-decoration-underline">${client_name}</u></h6>
+                <h6><u class="text-decoration-underline">${unit_description}</u></h6>
+                <h6><u class="text-decoration-underline">${unit_model}</u></h6>
+                <h6><u class="text-decoration-underline">${unit_accessories}</u></h6>
+                <h6><u class="text-decoration-underline">${unit_problem}</u></h6>
+                <h6><u class="text-decoration-underline">${resolution}</u></h6>
+                <h6><u class="text-decoration-underline">${received_by}</u></h6>
+                <h6><u class="text-decoration-underline">${job_order_by}</u></h6>
+                <h6><u class="text-decoration-underline">${tech_incharge}</u></h6>
+            </div>
+
+            <div class="col-sm-3"></div>
+
+            <div class="col-sm-3 text-end">
+                <h6>DATE:<u class="text-decoration-underline">${createdAt}</u></h6>
+                <h6>CONTACT#:<u class="text-decoration-underline">${phone_no}</u></h6>
+            </div>
+        </div>
+        <div class="mb-5"></div>
+        <div class="row">
+            <p>NOTE: ALL REPAIRED ITEMS WILL HAVE 5 DAYS GRACE PERIOD FOR CUSTOMER TO CLAIM THEIR UNITS, EXCEEDING DAYS WILL BE CHARGED FIFTY PESOS (PHP50.00) PER DAY STORAGE FEE.</p>
+        </div>
+        <div class="mb-5"></div>
+        <div class="row">
+            <div class="col-sm-6 text-left text-center">
+                <h3>_______________________________</h3>
+                <h5>CUSTOMERS NAME AND SIGNATURE</h5>
+            </div>
+            <div class="col-sm-6 text-end text-center">
+                <h3>______________________</h3>
+                <h5>CSO OFFICER</h5>
+            </div>
+        </div>
+            </body>
+        </head>
+    </html>`;
+    const printWindow = window.open('', '_blank', 'width=1200,height=800,top=' + (screen.height / 2 - 300) + ',left=' + (screen.width / 2 - 400));
+    printWindow.document.write(content);
+    const script = printWindow.document.createElement('script');
+    script.src = extraScripts;
+    script.onload = function () {
+        printWindow.print();
+        printWindow.close();
+    };
+    printWindow.document.body.appendChild(script);
+};
+
 const saveJobOrder = async () => {
     submitted.value = true;
 
-    let { id, job_id, client_name, unit_description, unit_model, unit_accessories, unit_problem, resolution, received_by, job_order_by, tech_incharge } = joborder.value || {};
+    let { id, job_id, client_name, unit_description, unit_model, unit_accessories, unit_problem, resolution, received_by, job_order_by, tech_incharge, phone_no } = joborder.value || {};
 
-    if (!client_name && !client_name.tirm()) {
+    if (!client_name && !client_name.trim()) {
         return null;
     }
 
@@ -64,7 +167,8 @@ const saveJobOrder = async () => {
             resolution,
             received_by,
             job_order_by,
-            tech_incharge
+            tech_incharge,
+            phone_no
         });
         let index = joborders.value.findIndex((job) => job.job_id === job_id);
         if (index > -1) {
@@ -84,7 +188,8 @@ const saveJobOrder = async () => {
             resolution,
             received_by,
             job_order_by,
-            tech_incharge
+            tech_incharge,
+            phone_no
         });
         // Set joborder.value to response data
         joborder.value = response.data;
@@ -154,197 +259,204 @@ const deleteSelectedJobOrders = async () => {
 const initFilters = () => {
     filters.value = {
         global: { value: null, matchMode: FilterMatchMode.CONTAINS },
-        client_name: { operator: FilterOperator.AND, constraints: [{ value: null, matchMode: FilterMatchMode.STARTS_WITH }] },
+        client_name: { operator: FilterOperator.AND, constraints: [{ value: null, matchMode: FilterMatchMode.STARTS_WITH }] }
     };
 };
 </script>
 
 <template>
-    <div class="grid">
-        <div class="col-12">
-            <div class="card">
-                <Toast />
-                <Toolbar class="mb-4">
-                    <template v-slot:start>
-                        <div class="my-2">
-                            <Button label="New" icon="pi pi-plus" class="p-button-success mr-2" @click="openNew" />
-                            <Button label="Delete" icon="pi pi-trash" class="p-button-danger" @click="confirmDeleteSelected" :disabled="!selectedJobOrders || !selectedJobOrders.length" />
+    <div id="joborder">
+        <div class="grid">
+            <div class="col-12">
+                <div class="card">
+                    <Toast />
+                    <Toolbar class="mb-4">
+                        <template v-slot:start>
+                            <div class="my-2">
+                                <Button label="New" icon="pi pi-plus" class="p-button-success mr-2" @click="openNew" />
+                                <Button label="Delete" icon="pi pi-trash" class="p-button-danger" @click="confirmDeleteSelected" :disabled="!selectedJobOrders || !selectedJobOrders.length" />
+                            </div>
+                        </template>
+
+                        <template v-slot:end>
+                            <Button label="Export" icon="pi pi-upload" class="p-button-help" @click="exportCSV($event)" />
+                        </template>
+                    </Toolbar>
+
+                    <DataTable
+                        ref="dt"
+                        :value="joborders"
+                        v-model:selection="selectedJobOrders"
+                        dataKey="id"
+                        :paginator="true"
+                        :rows="10"
+                        :filters="filters"
+                        v-model:filters="filters"
+                        filterDisplay="menu"
+                        paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
+                        :rowsPerPageOptions="[5, 10, 25]"
+                        currentPageReportTemplate="Showing {first} to {last} of {totalRecords} Job Orders"
+                        responsiveLayout="scroll"
+                        :globalFilterFields="['client_name', 'job_id']"
+                    >
+                        <template #header>
+                            <div class="flex flex-column md:flex-row md:justify-content-between md:align-items-center">
+                                <h5 class="m-0">Manage Job Orders</h5>
+                                <span class="block mt-2 md:mt-0 p-input-icon-left">
+                                    <i class="pi pi-search" />
+                                    <InputText v-model="filters['global'].value" placeholder="Search..." />
+                                </span>
+                            </div>
+                        </template>
+
+                        <Column selectionMode="multiple" headerStyle="width: 3rem"></Column>
+                        <Column field="job_id" header="Job Order #" :sortable="true" headerStyle="width:14%; min-width:10rem;">
+                            <template #body="slotProps">
+                                <span class="p-column-title">Job Order #</span>
+                                {{ slotProps.data.job_id }}
+                            </template>
+                        </Column>
+                        <Column field="client_name" header="Client Name" :sortable="true" headerStyle="width:14%; min-width:10rem;">
+                            <template #body="slotProps">
+                                <span class="p-column-title">Client Name</span>
+                                {{ slotProps.data.client_name }}
+                            </template>
+                            <template #filter="{ filterModel }">
+                                <InputText type="text" v-model="filterModel.value" class="p-column-filter" placeholder="Search by name" />
+                            </template>
+                        </Column>
+                        <Column field="unit_description" header="Unit Description" :sortable="true" headerStyle="width:14%; min-width:8rem;">
+                            <template #body="slotProps">
+                                <span class="p-column-title">Unit Description</span>
+                                {{ slotProps.data.unit_description }}
+                            </template>
+                        </Column>
+                        <Column field="unit_model" header="Unit Model" :sortable="true" headerStyle="width:14%; min-width:10rem;">
+                            <template #body="slotProps">
+                                <span class="p-column-title">Unit Model</span>
+                                {{ slotProps.data.unit_model }}
+                            </template>
+                        </Column>
+                        <Column field="unit_accessories" header="Unit Accessories" :sortable="true" headerStyle="width:14%; min-width:10rem;">
+                            <template #body="slotProps">
+                                <span class="p-column-title">Unit Accessories</span>
+                                {{ slotProps.data.unit_accessories }}
+                            </template>
+                        </Column>
+                        <Column field="unit_problem" header="Unit Problem" :sortable="true" headerStyle="width:14%; min-width:10rem;">
+                            <template #body="slotProps">
+                                <span class="p-column-title">Unit Accessories</span>
+                                {{ slotProps.data.unit_accessories }}
+                            </template>
+                        </Column>
+                        <Column headerStyle="min-width:10rem;">
+                            <template #body="slotProps">
+                                <Button icon="pi pi-pencil" class="p-button-rounded p-button-success mr-2" @click="editJobOrder(slotProps.data)" />
+                                <Button icon="pi pi-print" class="p-button-rounded p-button-primary mt-2" @click="print(slotProps.data)" />
+                                <Button icon="pi pi-trash" class="p-button-rounded p-button-warning ml-2" @click="confirmDeleteJobOrder(slotProps.data)" />
+                            </template>
+                        </Column>
+                    </DataTable>
+
+                    <Dialog v-model:visible="joborderDialog" :style="{ width: '600px' }" header="Job Order Details" :modal="true" class="p-fluid">
+                        <div class="field">
+                            <label for="name">Client Name</label>
+                            <InputText id="client_name" v-model.trim="joborder.client_name" required="true" autofocus :class="{ 'p-invalid': submitted && !joborder.client_name }" />
+                            <small class="p-invalid" v-if="submitted && !joborder.client_name">Client Name is required.</small>
                         </div>
-                    </template>
-
-                    <template v-slot:end>
-                        <FileUpload mode="basic" accept="image/*" :maxFileSize="1000000" label="Import" chooseLabel="Import" class="mr-2 inline-block" />
-                        <Button label="Export" icon="pi pi-upload" class="p-button-help" @click="exportCSV($event)" />
-                    </template>
-                </Toolbar>
-
-                <DataTable
-                    ref="dt"
-                    :value="joborders"
-                    v-model:selection="selectedJobOrders"
-                    dataKey="id"
-                    :paginator="true"
-                    :rows="10"
-                    :filters="filters"
-                    v-model:filters="filters"
-                    filterDisplay="menu"
-                    paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
-                    :rowsPerPageOptions="[5, 10, 25]"
-                    currentPageReportTemplate="Showing {first} to {last} of {totalRecords} Job Orders"
-                    responsiveLayout="scroll"
-                    :globalFilterFields="['client_name']"
-                >
-                    <template #header>
-                        <div class="flex flex-column md:flex-row md:justify-content-between md:align-items-center">
-                            <h5 class="m-0">Manage Job Orders</h5>
-                            <span class="block mt-2 md:mt-0 p-input-icon-left">
-                                <i class="pi pi-search" />
-                                <InputText v-model="filters['global'].value" placeholder="Search..." />
-                            </span>
-                        </div>
-                    </template>
-
-                    <Column selectionMode="multiple" headerStyle="width: 3rem"></Column>
-                    <Column field="job_id" header="Job Order #" :sortable="true" headerStyle="width:14%; min-width:10rem;">
-                        <template #body="slotProps">
-                            <span class="p-column-title">Job Order #</span>
-                            {{ slotProps.data.job_id }}
-                        </template>
-                    </Column>
-                    <Column field="client_name" header="Client Name" :sortable="true" headerStyle="width:14%; min-width:10rem;">
-                        <template #body="slotProps">
-                            <span class="p-column-title">Client Name</span>
-                            {{ slotProps.data.client_name }}
-                        </template>
-                        <template #filter="{ filterModel }">
-                            <InputText type="text" v-model="filterModel.value" class="p-column-filter" placeholder="Search by name" />
-                        </template>
-                    </Column>
-                    <Column field="unit_description" header="Unit Description" :sortable="true" headerStyle="width:14%; min-width:8rem;">
-                        <template #body="slotProps">
-                            <span class="p-column-title">Unit Description</span>
-                            {{ slotProps.data.unit_description }}
-                        </template>
-                    </Column>
-                    <Column field="unit_model" header="Unit Model" :sortable="true" headerStyle="width:14%; min-width:10rem;">
-                        <template #body="slotProps">
-                            <span class="p-column-title">Unit Model</span>
-                            {{ slotProps.data.unit_model }}
-                        </template>
-                    </Column>
-                    <Column field="unit_accessories" header="Unit Accessories" :sortable="true" headerStyle="width:14%; min-width:10rem;">
-                        <template #body="slotProps">
-                            <span class="p-column-title">Unit Accessories</span>
-                            {{ slotProps.data.unit_accessories }}
-                        </template>
-                    </Column>
-                    <Column field="unit_problem" header="Unit Problem" :sortable="true" headerStyle="width:14%; min-width:10rem;">
-                        <template #body="slotProps">
-                            <span class="p-column-title">Unit Accessories</span>
-                            {{ slotProps.data.unit_accessories }}
-                        </template>
-                    </Column>
-                    <Column headerStyle="min-width:10rem;">
-                        <template #body="slotProps">
-                            <Button icon="pi pi-pencil" class="p-button-rounded p-button-success mr-2" @click="editJobOrder(slotProps.data)" />
-                            <Button icon="pi pi-trash" class="p-button-rounded p-button-warning mt-2" @click="confirmDeleteJobOrder(slotProps.data)" />
-                        </template>
-                    </Column>
-                </DataTable>
-
-                <Dialog v-model:visible="joborderDialog" :style="{ width: '600px' }" header="Job Order Details" :modal="true" class="p-fluid">
-                    <div class="field">
-                        <label for="name">Client Name</label>
-                        <InputText id="client_name" v-model.trim="joborder.client_name" required="true" autofocus :class="{ 'p-invalid': submitted && !joborder.client_name }" />
-                        <small class="p-invalid" v-if="submitted && !joborder.client_name">Client Name is required.</small>
-                    </div>
-                    <div class="field">
-                        <label for="unit_description">Description</label>
-                        <Textarea id="unit_description" v-model="joborder.unit_description" required="true" rows="3" cols="20" />
-                    </div>
-
-                    <div class="formgrid grid">
-                        <div class="field col">
-                            <label for="unit_model">Unit Model </label>
-                            <InputText id="unit_model" v-model.trim="joborder.unit_model" required="true" autofocus :class="{ 'p-invalid': submitted && !joborder.unit_model }" />
-                            <small class="p-invalid" v-if="submitted && !joborder.unit_model">Unit Model is required.</small>
+                        <div class="field">
+                            <label for="unit_description">Description</label>
+                            <Textarea id="unit_description" v-model="joborder.unit_description" required="true" rows="3" cols="20" />
                         </div>
 
-                        <div class="field col">
-                            <label for="unit_accessories">Unit Accessories </label>
-                            <InputText id="unit_accessories" v-model.trim="joborder.unit_accessories" required="true" autofocus :class="{ 'p-invalid': submitted && !joborder.unit_accessories }" />
-                            <small class="p-invalid" v-if="submitted && !joborder.unit_accessories">Unit Accessories is required.</small>
+                        <div class="formgrid grid">
+                            <div class="field col">
+                                <label for="unit_model">Unit Model </label>
+                                <InputText id="unit_model" v-model.trim="joborder.unit_model" required="true" autofocus :class="{ 'p-invalid': submitted && !joborder.unit_model }" />
+                                <small class="p-invalid" v-if="submitted && !joborder.unit_model">Unit Model is required.</small>
+                            </div>
+
+                            <div class="field col">
+                                <label for="unit_accessories">Unit Accessories </label>
+                                <InputText id="unit_accessories" v-model.trim="joborder.unit_accessories" required="true" autofocus :class="{ 'p-invalid': submitted && !joborder.unit_accessories }" />
+                                <small class="p-invalid" v-if="submitted && !joborder.unit_accessories">Unit Accessories is required.</small>
+                            </div>
                         </div>
-                    </div>
+                        <div class="formgrid grid">
+                            <div class="field col">
+                                <label for="unit_problem">Unit Problem</label>
+                                <Textarea id="unit_problem" v-model="joborder.unit_problem" required="true" rows="3" cols="20" />
+                            </div>
+                            <div class="field col">
+                                <label for="phone_no">Phone No.</label>
+                                <InputText id="phone_no" v-model.trim="joborder.phone_no" required="true" autofocus :class="{ 'p-invalid': submitted && !joborder.phone_no }" />
+                                <small class="p-invalid" v-if="submitted && !joborder.phone_no">Received by is required.</small>
+                            </div>
+                        </div>
+                        <div class="formgrid grid">
+                            <div class="field col">
+                                <label for="resolution">Resolution </label>
+                                <InputText id="resolution" v-model.trim="joborder.resolution" required="true" autofocus :class="{ 'p-invalid': submitted && !joborder.resolution }" />
+                                <small class="p-invalid" v-if="submitted && !joborder.resolution">Resolution is required.</small>
+                            </div>
 
-                    <div class="field">
-                        <label for="unit_problem">Unit Problem</label>
-                        <Textarea id="unit_problem" v-model="joborder.unit_problem" required="true" rows="3" cols="20" />
-                    </div>
-
-                    <div class="formgrid grid">
-                        <div class="field col">
-                            <label for="resolution">Resolution </label>
-                            <InputText id="resolution" v-model.trim="joborder.resolution" required="true" autofocus :class="{ 'p-invalid': submitted && !joborder.resolution }" />
-                            <small class="p-invalid" v-if="submitted && !joborder.resolution">Resolution is required.</small>
+                            <div class="field col">
+                                <label for="received_by">Received By</label>
+                                <InputText id="received_by" v-model.trim="joborder.received_by" required="true" autofocus :class="{ 'p-invalid': submitted && !joborder.received_by }" />
+                                <small class="p-invalid" v-if="submitted && !joborder.received_by">Received by is required.</small>
+                            </div>
                         </div>
 
-                        <div class="field col">
-                            <label for="received_by">Received By</label>
-                            <InputText id="received_by" v-model.trim="joborder.received_by" required="true" autofocus :class="{ 'p-invalid': submitted && !joborder.received_by }" />
-                            <small class="p-invalid" v-if="submitted && !joborder.received_by">Received by is required.</small>
+                        <div class="formgrid grid">
+                            <div class="field col">
+                                <label for="job_order_by">Job Order By</label>
+                                <InputText id="job_order_by" v-model.trim="joborder.job_order_by" required="true" autofocus :class="{ 'p-invalid': submitted && !joborder.job_order_by }" />
+                                <small class="p-invalid" v-if="submitted && !joborder.job_order_by">Job Order By is required.</small>
+                            </div>
+
+                            <div class="field col">
+                                <label for="tech_incharge">Tech incharge</label>
+                                <InputText id="tech_incharge" v-model.trim="joborder.tech_incharge" required="true" autofocus :class="{ 'p-invalid': submitted && !joborder.tech_incharge }" />
+                                <small class="p-invalid" v-if="submitted && !joborder.tech_incharge">Tech incharge is required.</small>
+                            </div>
                         </div>
-                    </div>
 
-                    <div class="formgrid grid">
-                        <div class="field col">
-                            <label for="job_order_by">Job Order By</label>
-                            <InputText id="job_order_by" v-model.trim="joborder.job_order_by" required="true" autofocus :class="{ 'p-invalid': submitted && !joborder.job_order_by }" />
-                            <small class="p-invalid" v-if="submitted && !joborder.job_order_by">Job Order By is required.</small>
+                        <template #footer>
+                            <Button label="Cancel" icon="pi pi-times" class="p-button-text" @click="hideDialog" />
+                            <Button label="Save" icon="pi pi-check" class="p-button-text" @click="saveJobOrder" />
+                        </template>
+                    </Dialog>
+
+                    <Dialog v-model:visible="deleteJobOrderDialog" :style="{ width: '450px' }" header="Confirm" :modal="true">
+                        <div class="flex align-items-center justify-content-center">
+                            <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem" />
+                            <span v-if="joborder"
+                                >Are you sure you want to delete <b>{{ joborder.client_name }}</b
+                                >?</span
+                            >
                         </div>
+                        <template #footer>
+                            <Button label="No" icon="pi pi-times" class="p-button-text" @click="deleteJobOrderDialog = false" />
+                            <Button label="Yes" icon="pi pi-check" class="p-button-text" @click="deleteJobOrder" />
+                        </template>
+                    </Dialog>
 
-                        <div class="field col">
-                            <label for="tech_incharge">Tech incharge</label>
-                            <InputText id="tech_incharge" v-model.trim="joborder.tech_incharge" required="true" autofocus :class="{ 'p-invalid': submitted && !joborder.tech_incharge }" />
-                            <small class="p-invalid" v-if="submitted && !joborder.tech_incharge">Tech incharge is required.</small>
+                    <Dialog v-model:visible="deleteJobOrdersDialog" :style="{ width: '450px' }" header="Confirm" :modal="true">
+                        <div class="flex align-items-center justify-content-center">
+                            <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem" />
+                            <span v-if="joborder">Are you sure you want to delete the selected job orders?</span>
                         </div>
-                    </div>
-
-                    <template #footer>
-                        <Button label="Cancel" icon="pi pi-times" class="p-button-text" @click="hideDialog" />
-                        <Button label="Save" icon="pi pi-check" class="p-button-text" @click="saveJobOrder" />
-                    </template>
-                </Dialog>
-
-                <Dialog v-model:visible="deleteJobOrderDialog" :style="{ width: '450px' }" header="Confirm" :modal="true">
-                    <div class="flex align-items-center justify-content-center">
-                        <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem" />
-                        <span v-if="joborder"
-                            >Are you sure you want to delete <b>{{ joborder.client_name }}</b
-                            >?</span
-                        >
-                    </div>
-                    <template #footer>
-                        <Button label="No" icon="pi pi-times" class="p-button-text" @click="deleteJobOrderDialog = false" />
-                        <Button label="Yes" icon="pi pi-check" class="p-button-text" @click="deleteJobOrder" />
-                    </template>
-                </Dialog>
-
-                <Dialog v-model:visible="deleteJobOrdersDialog" :style="{ width: '450px' }" header="Confirm" :modal="true">
-                    <div class="flex align-items-center justify-content-center">
-                        <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem" />
-                        <span v-if="joborder">Are you sure you want to delete the selected job orders?</span>
-                    </div>
-                    <template #footer>
-                        <Button label="No" icon="pi pi-times" class="p-button-text" @click="deleteJobOrdersDialog = false" />
-                        <Button label="Yes" icon="pi pi-check" class="p-button-text" @click="deleteSelectedJobOrders" />
-                    </template>
-                </Dialog>
+                        <template #footer>
+                            <Button label="No" icon="pi pi-times" class="p-button-text" @click="deleteJobOrdersDialog = false" />
+                            <Button label="Yes" icon="pi pi-check" class="p-button-text" @click="deleteSelectedJobOrders" />
+                        </template>
+                    </Dialog>
+                </div>
             </div>
         </div>
+        <JobOrderPrintingView></JobOrderPrintingView>
     </div>
 </template>
-
 <style scoped lang="scss">
 @import '@/assets/demo/styles/badges.scss';
 </style>

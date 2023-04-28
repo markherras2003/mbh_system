@@ -62,6 +62,10 @@ const JobOrderSchema = new mongoose.Schema(
             min: 2,
             max: 50,
         },
+        phone_no: {
+            type: Number,
+            required: true,
+        },
     },
     { timestamps: true }
 );

@@ -103,15 +103,17 @@ import TreeTable from 'primevue/treetable';
 import TriStateCheckbox from 'primevue/tristatecheckbox';
 import VirtualScroller from 'primevue/virtualscroller';
 
-import CodeHighlight from '@/components/CodeHighlight.vue';
-import BlockViewer from '@/components/BlockViewer.vue';
+
+//@ts-nocheck
+import print from 'vue3-print-nb'
 
 import '@/assets/styles.scss';
 
 const app = createApp(App);
 
+app.use(print);
 app.use(router);
-app.use(store)
+app.use(store);
 app.use(PrimeVue, { ripple: true });
 app.use(ToastService);
 app.use(DialogService);
@@ -124,8 +126,6 @@ app.directive('styleclass', StyleClass);
 
 
 /* Prime Vue Component Initialization */
-app.component('CodeHighlight', CodeHighlight);
-app.component('BlockViewer', BlockViewer);
 app.component('Accordion', Accordion);
 app.component('AccordionTab', AccordionTab);
 app.component('AutoComplete', AutoComplete);
