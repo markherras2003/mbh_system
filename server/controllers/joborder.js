@@ -1,6 +1,6 @@
 import JobOrder from "../models/JobOrder.js";
 
-/* Get user value by ID */
+/* Get Job ORder value by ID */
 export const getJobOrder = async (req, res) => {
   try {
     const { id } = req.params;
@@ -133,7 +133,7 @@ export const updateJobOrder = async (req, res) => {
 };
 
 
-/* Delete User Execution */
+/* Delete Job Order Execution */
 export const deleteJobOrder = async (req, res) => {
   try {
   const deletedJob = await JobOrder.findByIdAndDelete(req.params._id);
