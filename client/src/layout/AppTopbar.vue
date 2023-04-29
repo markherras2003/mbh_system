@@ -2,12 +2,76 @@
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue';
 import { useLayout } from '@/layout/composables/layout';
 import { useRouter } from 'vue-router';
-
+import { useStore } from 'vuex';
 const { layoutConfig, onMenuToggle } = useLayout();
 
 const outsideClickListener = ref(null);
 const topbarMenuActive = ref(false);
 const router = useRouter();
+const menu = ref(null);
+const user = ref('');
+const store = useStore();
+const fullname = ref('');
+import axios from 'axios';
+
+axios.interceptors.response.use(
+    (response) => response,
+    (error) => {
+        if (error.response.status === 401) {
+            localStorage.removeItem('token');
+        }
+        return Promise.reject(error);
+    }
+);
+
+const created = async () => {
+    try {
+        const token = localStorage.getItem('token');
+        if (!token) {
+            // Redirect to login page if token is null
+            router.push('/auth/login');
+            return;
+        }
+        const response = await axios.get(`/users/${localStorage.getItem('_id')}`, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        });
+        let { firstName, lastName } = response.data || {};
+        fullname.value = lastName + ', ' + firstName;
+        const nestedMenuitems = ref([
+            {
+                label: fullname.value !== '' ? fullname.value : 'Profile',
+                icon: 'pi pi-fw pi-user',
+                items: [
+                    {
+                        label: 'Settings',
+                        icon: 'pi pi-fw pi-cog'
+                    },
+                    {
+                        label: 'Sign Out',
+                        icon: 'pi pi-fw pi-sign-out',
+                        command: () => {
+                            localStorage.removeItem("token");
+                            store.dispatch("user", null);
+                            router.push("/auth/login");
+                        }
+                    }
+                ]
+            }
+        ]);
+        menu.value = nestedMenuitems.value;
+        user.value = response?.data;
+        store.dispatch('user', response?.data);
+    } catch (error) {
+        console.log('err->', error.response.data);
+    }
+};
+created();
+
+function setup() {
+    return { user: computed(() => store.state.user) };
+}
 
 onMounted(() => {
     bindOutsideClickListener();
@@ -76,18 +140,7 @@ const isOutsideClicked = (event) => {
         </button>
 
         <div class="layout-topbar-menu" :class="topbarMenuClasses">
-            <button @click="onTopBarMenuButton()" class="p-link layout-topbar-button">
-                <i class="pi pi-calendar"></i>
-                <span>Calendar</span>
-            </button>
-            <button @click="onTopBarMenuButton()" class="p-link layout-topbar-button">
-                <i class="pi pi-user"></i>
-                <span>Profile</span>
-            </button>
-            <button @click="onSettingsClick()" class="p-link layout-topbar-button">
-                <i class="pi pi-cog"></i>
-                <span>Settings</span>
-            </button>
+            <Menubar :model="menu"></Menubar>
         </div>
     </div>
 </template>

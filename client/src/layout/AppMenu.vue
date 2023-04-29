@@ -1,6 +1,5 @@
 <script setup>
 import { ref } from 'vue';
-
 import AppMenuItem from './AppMenuItem.vue';
 
 const model = ref([
@@ -13,10 +12,17 @@ const model = ref([
         items: [
             { label: 'Users Account', icon: 'pi pi-fw pi-users', to: '/uikit/formlayout' },
             { label: 'Job Orders', icon: 'pi pi-fw pi-id-card', to: '/pages/joborders' },
-            { label: 'Assignatory', icon: 'pi pi-fw pi-id-card', to: '/uikit/formlayout' },
+        ]
+    },
+    {
+        label: 'Access Control',
+        items: [
+            { label: 'Roles', icon: 'pi pi-fw pi-users', to: '/access/roles' },
+            { label: 'Permissions', icon: 'pi pi-fw pi-id-card', to: '/access/permissions' },
         ]
     },
 ]);
+
 </script>
 
 <template>

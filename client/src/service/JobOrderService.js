@@ -1,17 +1,21 @@
 import axios from "axios";
 
+
 export default class JobOrderService {
+
+
     async getJobOrders() {
         const response = await axios.get('/joborder');
         return response.data.data;
     }
 
     myPrintData = (printData) => {
-        joborder.value = printData;
+        //joborder.value = printData;
+        printData.value = printData;
         let { id, job_id, client_name, unit_description,
             unit_model, unit_accessories, unit_problem,
             resolution, received_by, job_order_by,
-            tech_incharge, phone_no, createdAt } = joborder.value || {};
+            tech_incharge, phone_no, createdAt } = printData.value || {};
         console.log('print');
         console.log(printData);
         const extraCss = 'https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css';

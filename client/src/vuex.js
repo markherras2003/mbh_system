@@ -14,6 +14,7 @@ const store = createStore({
   actions: {
     user({ commit }, user) {
       commit('user', { user });
+      console.log('user executed');
     }
   }
 })

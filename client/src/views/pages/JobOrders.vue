@@ -1,11 +1,10 @@
 <script setup>
 import { FilterMatchMode, FilterOperator } from 'primevue/api';
-import { ref, onMounted, onBeforeMount } from 'vue';
+import { ref, onMounted, onBeforeMount, computed } from 'vue';
 import JobOrderService from '@/service/JobOrderService';
 import { useToast } from 'primevue/usetoast';
 import axios from 'axios';
 import InputText from 'primevue/inputtext';
-import JobOrderPrintingView from '@/components/printing/JobOrder.vue';
 
 const toast = useToast();
 
@@ -15,12 +14,11 @@ const deleteJobOrderDialog = ref(false);
 const deleteJobOrdersDialog = ref(false);
 const joborder = ref({});
 const selectedJobOrders = ref(null);
-
 const dt = ref(null);
 const filters = ref({});
 const submitted = ref(false);
-
 const joborderService = new JobOrderService();
+const user = ref(null);
 
 onBeforeMount(() => {
     initFilters();
@@ -30,6 +28,12 @@ onMounted(async () => {
     try {
         const data = await joborderService.getJobOrders();
         joborders.value = data;
+        const response = await axios.get(`/users/${localStorage.getItem('_id')}`, {
+            headers: {
+                Authorization: 'Bearer ' + localStorage.getItem('token')
+            }
+        });
+        user.value = response.data;
     } catch (error) {
         console.error(error);
     }
@@ -357,7 +361,6 @@ const initFilters = () => {
                 </div>
             </div>
         </div>
-        <JobOrderPrintingView></JobOrderPrintingView>
     </div>
 </template>
 <style scoped lang="scss">

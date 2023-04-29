@@ -2,19 +2,18 @@
 import { onMounted , ref} from 'vue';
 import JobOrderService from '@/service/JobOrderService';
 
-
 const joborders = ref(null);
 const joborderService = new JobOrderService();
 
 
-onMounted(() => {
-    joborderService.getJobOrders().then((data) => (joborders.value = data));
+onMounted(async () => {
+    const data = await joborderService.getJobOrders();
+        joborders.value = data;
 });
 
-const formatCurrency = (value) => {
-    return value.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
+const print = (printData) => {
+    joborderService.myPrintData(printData);
 };
-
 </script>
 
 
@@ -78,8 +77,8 @@ const formatCurrency = (value) => {
                 <Column field="unit_problem" header="Unit Problem" :sortable="true" style="width: 35%"></Column>
                 <Column style="width: 15%">
                     <template #header> View </template>
-                    <template #body>
-                        <Button icon="pi pi-search" type="button" class="p-button-text"></Button>
+                    <template #body="slotProps">
+                        <Button @click="print(slotProps.data)" icon="pi pi-search" type="button" class="p-button-text"></Button>
                     </template>
                 </Column>
             </DataTable>
