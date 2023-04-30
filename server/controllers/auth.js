@@ -10,6 +10,7 @@ export const register = async (req, res) => {
       lastName,
       email,
       password,
+      role,
     } = req.body;
     const salt = await bcrypt.genSalt();
     const passwordHash = await bcrypt.hash(password, salt);
@@ -24,6 +25,7 @@ export const register = async (req, res) => {
       lastName,
       email,
       password: passwordHash,
+      role
     });
     const savedUser = await newUser.save();
     res.status(200).json(savedUser);
@@ -64,12 +66,14 @@ export const updateUser = async (req, res) => {
       firstName,
       lastName,
       email,
+      role,
     } = req.body;
 
     const updatedUser = {
       firstName,
       lastName,
       email,
+      role
     };
 
     // Check if the email address is already registered

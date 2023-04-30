@@ -5,12 +5,15 @@ export default class JobOrderService {
 
 
     async getJobOrders() {
-        const response = await axios.get('/joborder');
+        const response = await axios.get(`/joborder`, {
+            headers: {
+                Authorization: 'Bearer ' + localStorage.getItem('token')
+            }
+        });
         return response.data.data;
     }
 
     myPrintData = (printData) => {
-        //joborder.value = printData;
         printData.value = printData;
         let { id, job_id, client_name, unit_description,
             unit_model, unit_accessories, unit_problem,

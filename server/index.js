@@ -6,6 +6,9 @@ import cors from "cors";
 import authRoutes from "./routes/auth.js";
 import userRoutes from "./routes/users.js";
 import joborderRoutes from "./routes/joborder.js";
+import roleRoutes from "./routes/role.js";
+import permissionRoutes from "./routes/permission.js";
+import { roles, permissions } from "./data/index.js";
 
 dotenv.config();
 const app = express();
@@ -21,17 +24,27 @@ app.use(cors());
 // Routes for Auths Login
 app.use("/auth", authRoutes);
 
-// Routers for Users with ID
+// Routers for Users
 app.use("/users", userRoutes);
 
-// Routers for Users with ID
+// Routers for Job Order
 app.use("/joborder", joborderRoutes);
+
+//
+app.use("/roles", roleRoutes);
+
+app.use("/permissions", permissionRoutes);
+
+
+// Enable only this to initialize roles and permissions once
+//Role.insertMany(roles);
+//Permission.insertMany(permissions);
 
 /* Mongoose Connection to MongoDB */
 const PORT = process.env.PORT || 6001;
 mongoose
   .connect(process.env.MONGO_URL, {
-    useNewUrlParser: true, 
+    useNewUrlParser: true,
     useUnifiedTopology: true,
   })
   .then(() => {

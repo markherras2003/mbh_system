@@ -1,6 +1,6 @@
 import JobOrder from "../models/JobOrder.js";
 
-/* Get Job ORder value by ID */
+/* Get Job Order value by id params */
 export const getJobOrder = async (req, res) => {
   try {
     const { id } = req.params;
@@ -51,7 +51,7 @@ export const getJobOrders = async (req, res) => {
 };
 
 
-/* Job Order Execution */
+/* Job Order Save Executions */
 export const saveJobOrder = async (req, res) => {
   try {
     const lastJobOrder = await JobOrder.findOne().sort({ job_id: -1 });
@@ -123,7 +123,6 @@ export const updateJobOrder = async (req, res) => {
 
     const saveJob = await JobOrder.findByIdAndUpdate(req.params._id, updateJobOrders, { new: true });
     if (!saveJob) {
-      // Return an error response if the user is not found
       return res.status(404).json({ message: 'Job Order not found' });
     }
     res.status(200).json(saveJob);
@@ -136,13 +135,12 @@ export const updateJobOrder = async (req, res) => {
 /* Delete Job Order Execution */
 export const deleteJobOrder = async (req, res) => {
   try {
-  const deletedJob = await JobOrder.findByIdAndDelete(req.params._id);
-  if (!deletedJob) {
-  // Return an error response if the user is not found
-  return res.status(404).json({ message: 'Job Order Not not found' });
-  }
-  res.status(200).json({ message: 'Job Deleted successfully' });
+    const deletedJob = await JobOrder.findByIdAndDelete(req.params._id);
+    if (!deletedJob) {
+      return res.status(404).json({ message: 'Job Order Not not found' });
+    }
+    res.status(200).json({ message: 'Job Deleted successfully' });
   } catch (err) {
-  res.status(500).json({ error: err.message });
+    res.status(500).json({ error: err.message });
   }
-  };
+};

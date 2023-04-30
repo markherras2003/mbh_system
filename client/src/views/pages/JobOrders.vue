@@ -5,6 +5,8 @@ import JobOrderService from '@/service/JobOrderService';
 import { useToast } from 'primevue/usetoast';
 import axios from 'axios';
 import InputText from 'primevue/inputtext';
+import { useStore } from 'vuex';
+import AccessDenied from '@/components/AccessDenied.vue';
 
 const toast = useToast();
 
@@ -19,10 +21,25 @@ const filters = ref({});
 const submitted = ref(false);
 const joborderService = new JobOrderService();
 const user = ref(null);
+const store = useStore();
 
 onBeforeMount(() => {
     initFilters();
 });
+
+const hasPermission = (permission, currentUserRole, roles) => {
+    const role = roles.find((r) => r.name === currentUserRole);
+    if (!role) return false;
+    const permissions = role.permissions;
+    if (!permissions) return false;
+    return permissions.includes(permission);
+};
+
+// usage of permissions:
+const canRead = computed(() => hasPermission('joborders:read', store.state.currentUserRole, store.state.roles));
+const canWrite = computed(() => hasPermission('joborders:write', store.state.currentUserRole, store.state.roles));
+const canDelete = computed(() => hasPermission('joborders:delete', store.state.currentUserRole, store.state.roles));
+const canEdit = computed(() => hasPermission('joborders:edit', store.state.currentUserRole, store.state.roles));
 
 onMounted(async () => {
     try {
@@ -64,19 +81,27 @@ const saveJobOrder = async () => {
     }
 
     if (id) {
-        const response = await axios.put(`/joborder/${id}`, {
-            id,
-            client_name,
-            unit_description,
-            unit_model,
-            unit_accessories,
-            unit_problem,
-            resolution,
-            received_by,
-            job_order_by,
-            tech_incharge,
-            phone_no
-        });
+        const response = await axios.put(
+            `/joborder/${id}`,
+            {
+                id,
+                client_name,
+                unit_description,
+                unit_model,
+                unit_accessories,
+                unit_problem,
+                resolution,
+                received_by,
+                job_order_by,
+                tech_incharge,
+                phone_no
+            },
+            {
+                headers: {
+                    Authorization: 'Bearer ' + localStorage.getItem('token')
+                }
+            }
+        );
         let index = joborders.value.findIndex((job) => job.job_id === job_id);
         if (index > -1) {
             joborders.value[index] = joborder.value;
@@ -85,19 +110,27 @@ const saveJobOrder = async () => {
         toast.add({ severity: 'success', summary: 'Successful', detail: 'Job Order Updated', life: 3000 });
     } else {
         job_id = generateJobOrderID();
-        const response = await axios.post(`/joborder`, {
-            job_id,
-            client_name,
-            unit_description,
-            unit_model,
-            unit_accessories,
-            unit_problem,
-            resolution,
-            received_by,
-            job_order_by,
-            tech_incharge,
-            phone_no
-        });
+        const response = await axios.post(
+            `/joborder`,
+            {
+                job_id,
+                client_name,
+                unit_description,
+                unit_model,
+                unit_accessories,
+                unit_problem,
+                resolution,
+                received_by,
+                job_order_by,
+                tech_incharge,
+                phone_no
+            },
+            {
+                headers: {
+                    Authorization: 'Bearer ' + localStorage.getItem('token')
+                }
+            }
+        );
         // Set joborder.value to response data
         joborder.value = response.data;
         joborder.value.id = joborder.value._id;
@@ -121,7 +154,11 @@ const confirmDeleteJobOrder = (editJobOrder) => {
 
 const deleteJobOrder = async () => {
     let { id, job_id } = joborder.value || {};
-    const response = await axios.delete(`/joborder/${id}`);
+    const response = await axios.delete(`/joborder/${id}`, {
+        headers: {
+            Authorization: 'Bearer ' + localStorage.getItem('token')
+        }
+    });
     if (response.status === 200) {
         joborders.value = joborders.value.filter((val) => val.job_id !== job_id);
         deleteJobOrderDialog.value = false;
@@ -147,7 +184,11 @@ const deleteSelectedJobOrders = async () => {
     try {
         // Loop through each selected job order and send a DELETE request
         for (const jobOrder of selectedJobOrders.value) {
-            const response = await axios.delete(`/joborder/${jobOrder.id}`);
+            const response = await axios.delete(`/joborder/${jobOrder.id}`, {
+                headers: {
+                    Authorization: 'Bearer ' + localStorage.getItem('token')
+                }
+            });
             if (response.status === 200) {
                 // Remove the deleted job order from the joborders array
                 joborders.value = joborders.value.filter((val) => val.job_id !== jobOrder.job_id);
@@ -173,15 +214,18 @@ const initFilters = () => {
 
 <template>
     <div id="joborder">
-        <div class="grid">
+        <div v-if="!canRead">
+            <AccessDenied></AccessDenied>
+        </div>
+        <div class="grid" v-if="canRead">
             <div class="col-12">
                 <div class="card">
                     <Toast />
                     <Toolbar class="mb-4">
                         <template v-slot:start>
                             <div class="my-2">
-                                <Button label="New" icon="pi pi-plus" class="p-button-success mr-2" @click="openNew" />
-                                <Button label="Delete" icon="pi pi-trash" class="p-button-danger" @click="confirmDeleteSelected" :disabled="!selectedJobOrders || !selectedJobOrders.length" />
+                                <Button v-if="canWrite" label="New" icon="pi pi-plus" class="p-button-success mr-2" @click="openNew" />
+                                <Button v-if="canDelete" label="Delete" icon="pi pi-trash" class="p-button-danger" @click="confirmDeleteSelected" :disabled="!selectedJobOrders || !selectedJobOrders.length" />
                             </div>
                         </template>
 
@@ -258,9 +302,9 @@ const initFilters = () => {
                         </Column>
                         <Column headerStyle="min-width:10rem;">
                             <template #body="slotProps">
-                                <Button icon="pi pi-pencil" class="p-button-rounded p-button-success mr-2" @click="editJobOrder(slotProps.data)" />
-                                <Button icon="pi pi-print" class="p-button-rounded p-button-primary mt-2" @click="print(slotProps.data)" />
-                                <Button icon="pi pi-trash" class="p-button-rounded p-button-warning ml-2" @click="confirmDeleteJobOrder(slotProps.data)" />
+                                <Button icon="pi pi-pencil" v-if="canEdit" class="p-button-rounded p-button-success mr-2" @click="editJobOrder(slotProps.data)" />
+                                <Button icon="pi pi-print" v-if="canRead" class="p-button-rounded p-button-primary mt-2" @click="print(slotProps.data)" />
+                                <Button icon="pi pi-trash" v-if="canDelete" class="p-button-rounded p-button-warning ml-2" @click="confirmDeleteJobOrder(slotProps.data)" />
                             </template>
                         </Column>
                     </DataTable>

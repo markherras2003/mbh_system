@@ -104,14 +104,12 @@ import TriStateCheckbox from 'primevue/tristatecheckbox';
 import VirtualScroller from 'primevue/virtualscroller';
 
 
-//@ts-nocheck
-import print from 'vue3-print-nb'
+
 
 import '@/assets/styles.scss';
 
 const app = createApp(App);
 
-app.use(print);
 app.use(router);
 app.use(store);
 app.use(PrimeVue, { ripple: true });

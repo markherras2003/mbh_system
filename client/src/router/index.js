@@ -23,12 +23,22 @@ const router = createRouter({
                     name: 'joborders',
                     component: () => import('@/views/pages/JobOrders.vue')
                 },
+                {
+                    path: '/pages/permissions',
+                    name: 'permissions',
+                    component: () => import('@/views/pages/Permissions.vue')
+                },
+                {
+                    path: '/pages/roles',
+                    name: 'roles',
+                    component: () => import('@/views/pages/Roles.vue')
+                },
             ]
         },
         {
-            path: '/landing',
-            name: 'landing',
-            component: () => import('@/views/pages/Landing.vue')
+            path: '/home',
+            name: 'home',
+            component: () => import('@/views/pages/Home.vue')
         },
         {
             path: '/:pathMatch(.*)*',
@@ -41,16 +51,6 @@ const router = createRouter({
             name: 'login',
             component: () => import('@/views/pages/auth/Login.vue')
         },
-        {
-            path: '/auth/access',
-            name: 'accessDenied',
-            component: () => import('@/views/pages/auth/Access.vue')
-        },
-        {
-            path: '/auth/error',
-            name: 'error',
-            component: () => import('@/views/pages/auth/Error.vue')
-        }
     ]
 });
 

@@ -9,7 +9,7 @@ import { useStore } from 'vuex';
 const { layoutConfig } = useLayout();
 const email = ref('');
 const password = ref('');
-const checked = ref(false);;
+const checked = ref(false);
 const router = useRouter();
 const store = useStore();
 const message = ref([]);
@@ -19,6 +19,33 @@ const logoUrl = computed(() => {
     return `layout/images/${layoutConfig.darkTheme.value ? 'logo' : 'logo'}.jpg`;
 });
 
+async function fetchData() {
+    try {
+        const { data: roles } = await axios.get('/roles/state', {
+            headers: {
+                Authorization: 'Bearer ' + localStorage.getItem('token')
+            }
+        });
+        const { data: permissions } = await axios.get('/permissions/state', {
+            headers: {
+                Authorization: 'Bearer ' + localStorage.getItem('token')
+            }
+        });
+
+        store.commit('setRoles', roles);
+        store.commit('setPermissions', permissions);
+    } catch (error) {
+        console.log(error);
+    }
+}
+
+async function fetchCurrentUserRole(role) {
+    try {
+        store.commit('setCurrentUserRole', role);
+    } catch (error) {
+        console.log(error);
+    }
+}
 
 const handleSubmit = async (type) => {
     try {
@@ -31,6 +58,8 @@ const handleSubmit = async (type) => {
             localStorage.setItem('token', response.data.token);
             localStorage.setItem('_id', response.data.user._id);
             store.dispatch('user', response.data);
+            fetchData();
+            fetchCurrentUserRole(response.data.user.role);
             router.push('/');
         } else if (response.status === 400 && response.data.msg) {
             alert('test');
@@ -62,7 +91,7 @@ const handleSubmit = async (type) => {
                             <InputText id="email" type="text" placeholder="Email address" class="w-full md:w-30rem mb-5" style="padding: 1rem" v-model="email" />
 
                             <label for="password" class="block text-900 font-medium text-xl mb-2">Password</label>
-                            <Password id="password" v-model="password" placeholder="Password" :toggleMask="true" class="w-full mb-3" inputClass="w-full" :inputStyle="{ padding: '1rem' }"  @keyup.enter="handleSubmit"></Password>
+                            <Password id="password" v-model="password" placeholder="Password" :toggleMask="true" class="w-full mb-3" inputClass="w-full" :inputStyle="{ padding: '1rem' }" @keyup.enter="handleSubmit"></Password>
 
                             <transition-group name="p-message" tag="div">
                                 <Message v-for="msg of message" :severity="msg.severity" :key="msg.content">{{ msg.content }}</Message>

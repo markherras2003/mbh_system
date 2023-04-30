@@ -17,7 +17,8 @@
         "vue-html-to-paper": "^1.4.4",
         "vue-router": "^4.1.5",
         "vue3-print-nb": "^0.1.4",
-        "vuex": "^4.1.0"
+        "vuex": "^4.1.0",
+        "vuex-persistedstate": "^4.1.0"
     },
     "devDependencies": {
         "@rushstack/eslint-patch": "^1.1.4",

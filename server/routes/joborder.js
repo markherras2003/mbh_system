@@ -6,15 +6,14 @@ import {
   updateJobOrder,
   deleteJobOrder
 } from "../controllers/joborder.js";
-//import { verifyToken } from "../middleware/auth.js";
+import { verifyToken } from "../middleware/auth.js";
 
 const router = express.Router();
 
-/*  Get List of job order per ID with jwt verify token */
-router.get("/:_id", getJobOrder);
-router.get("/",getJobOrders)
-router.post("/", saveJobOrder);
-router.put('/:_id', updateJobOrder);
-router.delete('/:_id', deleteJobOrder);
+router.get("/:_id", verifyToken, getJobOrder);
+router.get("/", verifyToken, getJobOrders)
+router.post("/", verifyToken, saveJobOrder);
+router.put('/:_id', verifyToken, updateJobOrder);
+router.delete('/:_id', verifyToken, deleteJobOrder);
 
 export default router;

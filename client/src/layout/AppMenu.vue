@@ -17,8 +17,8 @@ const model = ref([
     {
         label: 'Access Control',
         items: [
-            { label: 'Roles', icon: 'pi pi-fw pi-users', to: '/access/roles' },
-            { label: 'Permissions', icon: 'pi pi-fw pi-id-card', to: '/access/permissions' },
+            { label: 'Roles', icon: 'pi pi-fw pi-users', to: '/pages/roles' },
+            { label: 'Permissions', icon: 'pi pi-fw pi-id-card', to: '/pages/permissions' },
         ]
     },
 ]);
