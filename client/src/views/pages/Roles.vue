@@ -7,6 +7,7 @@ import { useToast } from 'primevue/usetoast';
 import axios from 'axios';
 import InputText from 'primevue/inputtext';
 import { useStore } from 'vuex';
+import AccessDenied from '@/components/AccessDenied.vue';
 
 const toast = useToast();
 
@@ -267,8 +268,11 @@ const initFilters = () => {
 </script>
 
 <template>
-    <div id="joborder" v-if="canRead">
-        <div class="grid">
+    <div id="roles">
+        <div v-if="!canRead">
+            <AccessDenied></AccessDenied>
+        </div>
+        <div class="grid" v-if="canRead">
             <div class="col-12">
                 <div class="card">
                     <Toast />

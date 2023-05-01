@@ -1,7 +1,8 @@
 <script setup>
 import { FilterMatchMode, FilterOperator } from 'primevue/api';
 import { ref, onMounted, onBeforeMount, computed } from 'vue';
-import PermissionService from '@/service/PermissionService';
+import UserService from '@/service/UserService';
+import RoleService from '@/service/RoleService';
 import { useToast } from 'primevue/usetoast';
 import axios from 'axios';
 import InputText from 'primevue/inputtext';
@@ -19,8 +20,11 @@ const selectedCruds = ref(null);
 const dt = ref(null);
 const filters = ref({});
 const submitted = ref(false);
-const permissionService = new PermissionService();
+const userService = new UserService();
+const roleService = new RoleService();
+const roledatas = ref([]);
 const user = ref(null);
+const confirmpassword = ref('');
 const store = useStore();
 
 onBeforeMount(() => {
@@ -36,15 +40,18 @@ const hasPermission = (permission, currentUserRole, roles) => {
 };
 
 // usage of permissions:
-const canRead = computed(() => hasPermission('permissions:read', store.state.currentUserRole, store.state.roles));
-const canWrite = computed(() => hasPermission('permissions:write', store.state.currentUserRole, store.state.roles));
-const canDelete = computed(() => hasPermission('permissions:delete', store.state.currentUserRole, store.state.roles));
-const canEdit = computed(() => hasPermission('permissions:edit', store.state.currentUserRole, store.state.roles));
+const canRead = computed(() => hasPermission('users:read', store.state.currentUserRole, store.state.roles));
+const canWrite = computed(() => hasPermission('users:write', store.state.currentUserRole, store.state.roles));
+const canDelete = computed(() => hasPermission('users:delete', store.state.currentUserRole, store.state.roles));
+const canEdit = computed(() => hasPermission('users:edit', store.state.currentUserRole, store.state.roles));
 
 onMounted(async () => {
     try {
-        const data = await permissionService.getPermissions();
+        const data = await userService.getUsers();
+        const role = await roleService.getRolename();
         cruddatas.value = data;
+        roledatas.value = role;
+        console.log(roledatas);
         const response = await axios.get(`/users/${localStorage.getItem('_id')}`, {
             headers: {
                 Authorization: 'Bearer ' + localStorage.getItem('token')
@@ -69,19 +76,28 @@ const hideDialog = () => {
 
 const saveData = async () => {
     submitted.value = true;
-
-    let { _id, name, description } = cruddata.value || {};
-
-    if (!name && !name.trim()) {
+    let {
+        _id,
+        firstName,
+        lastName,
+        email,
+        password,
+        role: { name: roleName }
+    } = cruddata.value || {};
+    console.log(roleName);
+    if (!firstName && !firstName.trim()) {
         return null;
     }
 
     if (_id) {
         const response = await axios.put(
-            `/permissions/${_id}`,
+            `/auth/users/${_id}`,
             {
-                name,
-                description
+                firstName,
+                lastName,
+                email,
+                password,
+                role: roleName
             },
             {
                 headers: {
@@ -94,13 +110,16 @@ const saveData = async () => {
             cruddatas.value[index] = cruddata.value;
         }
         cruddata.value = response.data;
-        toast.add({ severity: 'success', summary: 'Successful', detail: 'Roles Updated', life: 3000 });
+        toast.add({ severity: 'success', summary: 'Successful', detail: 'Users Updated', life: 3000 });
     } else {
         const response = await axios.post(
-            `/permissions`,
+            `/auth/register`,
             {
-                name,
-                description
+                firstName,
+                lastName,
+                email,
+                password,
+                role: roleName
             },
             {
                 headers: {
@@ -110,14 +129,23 @@ const saveData = async () => {
         );
         cruddata.value = response.data;
         cruddatas.value.push(cruddata.value);
-        toast.add({ severity: 'success', summary: 'Successful', detail: 'Roles Created', life: 3000 });
+        toast.add({ severity: 'success', summary: 'Successful', detail: 'Users Created', life: 3000 });
     }
     crudDialog.value = false;
     cruddata.value = {};
 };
 
 const editData = (editData) => {
-    cruddata.value = { ...editData };
+    const { _id, firstName, lastName, email, password, role } = editData;
+    cruddata.value = {
+        _id,
+        firstName,
+        lastName,
+        email,
+        password,
+        role: { name: role }
+    };
+    console.log(cruddata);
     crudDialog.value = true;
 };
 
@@ -128,7 +156,7 @@ const confirmDeleteData = (editData) => {
 
 const deleteData = async () => {
     let { _id, name } = cruddata.value || {};
-    const response = await axios.delete(`/permissions/${_id}`, {
+    const response = await axios.delete(`/auth/users/${_id}`, {
         headers: {
             Authorization: 'Bearer ' + localStorage.getItem('token')
         }
@@ -137,7 +165,7 @@ const deleteData = async () => {
         cruddatas.value = cruddatas.value.filter((val) => val._id !== _id);
         deletecrudDialog.value = false;
         cruddata.value = {};
-        toast.add({ severity: 'success', summary: 'Successful', detail: 'Job Order Deleted', life: 3000 });
+        toast.add({ severity: 'success', summary: 'Successful', detail: 'User Deleted', life: 3000 });
     }
 };
 
@@ -151,25 +179,22 @@ const confirmDeleteSelected = () => {
 
 const deleteSelectedData = async () => {
     try {
-        // Loop through each selected job order and send a DELETE request
         for (const dataCrud of selectedCruds.value) {
-            const response = await axios.delete(`/permissions/${dataCrud._id}`, {
+            const response = await axios.delete(`/auth/users/${dataCrud._id}`, {
                 headers: {
                     Authorization: 'Bearer ' + localStorage.getItem('token')
                 }
             });
             if (response.status === 200) {
-                // Remove the deleted job order from the joborders array
                 cruddatas.value = cruddatas.value.filter((val) => val._id !== dataCrud._id);
             }
         }
-        // Clear the selected job orders and display a success toast notification
         selectedCruds.value = null;
         deletecrudsDialog.value = false;
-        toast.add({ severity: 'success', summary: 'Successful', detail: 'Job Orders Deleted', life: 3000 });
+        toast.add({ severity: 'success', summary: 'Successful', detail: 'Users Deleted', life: 3000 });
     } catch (error) {
         console.error(error);
-        toast.add({ severity: 'error', summary: 'Error', detail: 'Failed to delete job orders', life: 3000 });
+        toast.add({ severity: 'error', summary: 'Error', detail: 'Failed to delete Users', life: 3000 });
     }
 };
 
@@ -182,7 +207,7 @@ const initFilters = () => {
 </script>
 
 <template>
-    <div id="permissions">
+    <div id="users">
         <div v-if="!canRead">
             <AccessDenied></AccessDenied>
         </div>
@@ -221,7 +246,7 @@ const initFilters = () => {
                     >
                         <template #header>
                             <div class="flex flex-column md:flex-row md:justify-content-between md:align-items-center">
-                                <h5 class="m-0">Manage Permissions</h5>
+                                <h5 class="m-0">Manage Users</h5>
                                 <span class="block mt-2 md:mt-0 p-input-icon-left">
                                     <i class="pi pi-search" />
                                     <InputText v-model="filters['global'].value" placeholder="Search..." />
@@ -230,20 +255,34 @@ const initFilters = () => {
                         </template>
 
                         <Column selectionMode="multiple" headerStyle="width: 3rem"></Column>
-                        <Column field="name" header="Role" :sortable="true" headerStyle="width:40%; min-width:10rem;">
+                        <Column field="firstName" header="Firstname" :sortable="true" headerStyle="width:20%; min-width:10rem;">
                             <template #body="slotProps">
-                                <span class="p-column-title">Role</span>
-                                {{ slotProps.data.name }}
+                                <span class="p-column-title">Firstname</span>
+                                {{ slotProps.data.firstName }}
                             </template>
                             <template #filter="{ filterModel }">
                                 <InputText type="text" v-model="filterModel.value" class="p-column-filter" placeholder="Search by name" />
                             </template>
                         </Column>
 
-                        <Column field="permissions" header="Description" :sortable="true" headerStyle="width:40%; min-width:10rem;">
+                        <Column field="lastName" header="Lastname" :sortable="true" headerStyle="width:20%; min-width:10rem;">
                             <template #body="slotProps">
-                                <span class="p-column-title">Description</span>
-                                {{ slotProps.data.description }}
+                                <span class="p-column-title">Lastname</span>
+                                {{ slotProps.data.lastName }}
+                            </template>
+                        </Column>
+
+                        <Column field="email" header="Email" :sortable="true" headerStyle="width:20%; min-width:10rem;">
+                            <template #body="slotProps">
+                                <span class="p-column-title">Email</span>
+                                {{ slotProps.data.email }}
+                            </template>
+                        </Column>
+
+                        <Column field="role" header="Role" :sortable="true" headerStyle="width:20%; min-width:10rem;">
+                            <template #body="slotProps">
+                                <span class="p-column-title">Role</span>
+                                {{ slotProps.data.role }}
                             </template>
                         </Column>
 
@@ -256,16 +295,43 @@ const initFilters = () => {
                     </DataTable>
 
                     <Dialog v-model:visible="crudDialog" :style="{ width: '600px' }" header="Roles and Permissions" :modal="true" class="p-fluid">
-                        <div class="field">
-                            <label for="name">Role Name</label>
-                            <InputText id="name" v-model.trim="cruddata.name" required="true" autofocus :class="{ 'p-invalid': submitted && !cruddata.name }" />
-                            <small class="p-invalid mb-2" v-if="submitted && !cruddata.name">Role Name is required.</small>
+                        <div class="formgrid grid">
+                            <div class="field col">
+                                <label for="firstName">Firstname</label>
+                                <InputText id="firstName" v-model.trim="cruddata.firstName" required="true" autofocus :class="{ 'p-invalid': submitted && !cruddata.firstName }" />
+                                <small class="p-invalid mb-2" v-if="submitted && !cruddata.firstName">Firstname is required.</small>
+                            </div>
+
+                            <div class="field col">
+                                <label for="lastName">Lastname</label>
+                                <InputText id="lastName" v-model.trim="cruddata.lastName" required="true" autofocus :class="{ 'p-invalid': submitted && !cruddata.lastName }" />
+                                <small class="p-invalid mb-2" v-if="submitted && !cruddata.lastName">Lastname is required.</small>
+                            </div>
                         </div>
 
                         <div class="field">
-                            <label for="description">Description</label>
-                            <InputText id="description" v-model.trim="cruddata.description" required="true" autofocus :class="{ 'p-invalid': submitted && !cruddata.description }" />
-                            <small class="p-invalid mb-2" v-if="submitted && !cruddata.description">Role Name is required.</small>
+                            <label for="email">Email</label>
+                            <InputText id="email" v-model.trim="cruddata.email" required="true" autofocus :class="{ 'p-invalid': submitted && !cruddata.email }" />
+                            <small class="p-invalid mb-2" v-if="submitted && !cruddata.email">Email is required.</small>
+                        </div>
+
+                        <div class="field">
+                            <label for="role">Role</label>
+                            <Dropdown v-model="cruddata.role" :options="roledatas" optionLabel="name" placeholder="Select" />
+                        </div>
+
+                        <div class="formgrid grid">
+                            <div class="field col">
+                                <label for="password">Password</label>
+                                <Password id="password" v-model="cruddata.password" autofocus :class="{ 'p-invalid': submitted && !cruddata.password }" />
+                                <small class="p-invalid mb-2" v-if="submitted && !cruddata.password">Password is required.</small>
+                            </div>
+
+                            <div class="field col">
+                                <label for="confirmpassword">Confirm Password</label>
+                                <Password id="confirmpassword" v-model="confirmpassword" :class="{ 'p-invalid': submitted && !confirmpassword }" />
+                                <small class="p-invalid mb-2" v-if="submitted && !confirmpassword">Confirm Pasword is required.</small>
+                            </div>
                         </div>
 
                         <template #footer>

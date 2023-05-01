@@ -18,6 +18,23 @@ export const getAllRoles = async (req, res) => {
 }
 
 
+// function to get all roles
+export const getRolesName = async (req, res) => {
+
+  try {
+    // Find all roles and return only the name field, excluding the _id field
+    const roles = await Roles.find({}, { _id: 0, name: 1 });
+
+    const data = {
+      "data": roles
+    };
+
+    res.status(200).json(data);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+}
+
 export const getAllRolesState = async (req, res) => {
   try {
     const roles = await Roles.find();

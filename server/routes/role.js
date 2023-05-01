@@ -4,7 +4,8 @@ import {
     updateRole,
     saveRole,
     deleteRole,
-    getAllRolesState
+    getAllRolesState,
+    getRolesName
 
 } from "../controllers/role.js";
 import { verifyToken } from "../middleware/auth.js";
@@ -12,6 +13,7 @@ import { verifyToken } from "../middleware/auth.js";
 const router = express.Router();
 
 router.get("/", verifyToken, getAllRoles);
+router.get("/rolename", verifyToken, getRolesName);
 router.get("/state", verifyToken, getAllRolesState);
 router.put('/:_id', verifyToken, updateRole);
 router.post("/", verifyToken, saveRole);

@@ -14,8 +14,12 @@ export const getUser = async (req, res) => {
 /* Get all users */
 export const getUsers = async (req, res) => {
   try {
-    const users = await User.find();
-    res.status(200).json(users);
+      // Find all permissions and return only the _id and name fields
+      const users = await User.find();
+      const data = {
+        "data": users
+      };
+    res.status(200).json(data);
   } catch (err) {
     res.status(404).json({ message: err.message });
   }

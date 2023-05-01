@@ -12,4 +12,14 @@ export default class RoleService {
         return response.data.data;
     }
 
+
+    async getRolename() {
+        const response = await axios.get(`/roles/rolename`, {
+                headers: {
+                    Authorization: 'Bearer ' + localStorage.getItem('token')
+                }
+            });
+        return response.data.data;
+    }
+
 }

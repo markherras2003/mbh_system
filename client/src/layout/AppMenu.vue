@@ -10,7 +10,7 @@ const model = ref([
     {
         label: 'Administrator Panel',
         items: [
-            { label: 'Users Account', icon: 'pi pi-fw pi-users', to: '/uikit/formlayout' },
+            { label: 'Users Account', icon: 'pi pi-fw pi-users', to: '/pages/users' },
             { label: 'Job Orders', icon: 'pi pi-fw pi-id-card', to: '/pages/joborders' },
         ]
     },
