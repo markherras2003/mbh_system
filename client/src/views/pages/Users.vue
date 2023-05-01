@@ -25,6 +25,7 @@ const roleService = new RoleService();
 const roledatas = ref([]);
 const user = ref(null);
 const confirmpassword = ref('');
+const isMatchPassword = ref(false);
 const store = useStore();
 
 onBeforeMount(() => {
@@ -76,63 +77,82 @@ const hideDialog = () => {
 
 const saveData = async () => {
     submitted.value = true;
-    let {
-        _id,
-        firstName,
-        lastName,
-        email,
-        password,
-        role: { name: roleName }
-    } = cruddata.value || {};
-    console.log(roleName);
-    if (!firstName && !firstName.trim()) {
-        return null;
-    }
+    try {
 
-    if (_id) {
-        const response = await axios.put(
-            `/auth/users/${_id}`,
-            {
-                firstName,
-                lastName,
-                email,
-                password,
-                role: roleName
-            },
-            {
-                headers: {
-                    Authorization: 'Bearer ' + localStorage.getItem('token')
-                }
-            }
-        );
-        let index = cruddatas.value.findIndex((crud) => crud._id === _id);
-        if (index > -1) {
-            cruddatas.value[index] = cruddata.value;
+        let {
+            _id,
+            firstName,
+            lastName,
+            email,
+            password,
+            role: { name: roleName }
+        } = cruddata.value || {};
+
+        if (password !== confirmpassword.value) {
+          isMatchPassword.value = true;
+          return null;
+        }     
+        if (!firstName && !firstName.trim()) {
+            return null;
         }
-        cruddata.value = response.data;
-        toast.add({ severity: 'success', summary: 'Successful', detail: 'Users Updated', life: 3000 });
-    } else {
-        const response = await axios.post(
-            `/auth/register`,
-            {
-                firstName,
-                lastName,
-                email,
-                password,
-                role: roleName
-            },
-            {
-                headers: {
-                    Authorization: 'Bearer ' + localStorage.getItem('token')
+
+        if (_id) {
+            const response = await axios.put(
+                `/auth/users/${_id}`,
+                {
+                    firstName,
+                    lastName,
+                    email,
+                    password,
+                    role: roleName
+                },
+                {
+                    headers: {
+                        Authorization: 'Bearer ' + localStorage.getItem('token')
+                    }
                 }
+            );
+            let index = cruddatas.value.findIndex((crud) => crud._id === _id);
+            if (index > -1) {
+                cruddatas.value[index] = cruddata.value;
             }
-        );
-        cruddata.value = response.data;
-        cruddatas.value.push(cruddata.value);
-        toast.add({ severity: 'success', summary: 'Successful', detail: 'Users Created', life: 3000 });
+            //Store response value to cruddata
+            cruddata.value = response.data;
+            toast.add({ severity: 'success', summary: 'Successful', detail: 'Users Updated', life: 3000 });
+        } else {
+            const response = await axios.post(
+                `/auth/register`,
+                {
+                    firstName,
+                    lastName,
+                    email,
+                    password,
+                    role: roleName
+                },
+                {
+                    headers: {
+                        Authorization: 'Bearer ' + localStorage.getItem('token')
+                    }
+                }
+            );
+            //Store response value to cruddata
+            cruddata.value = response.data;
+            // update and push the cruddata value to cruddatas
+            cruddatas.value.push(cruddata.value);
+            toast.add({ severity: 'success', summary: 'Successful', detail: 'Users Created', life: 3000 });
+        }
+        isMatchPassword.value = false;
+        crudDialog.value = false;
+        cruddata.value = {};
+    } catch (error) {
+        if (error.response && error.response.status === 409) {
+          // Email address already registered
+          toast.add({ severity: 'error', summary: 'Conflict Error', detail: ' Email address already registered', life: 5000 });
+        } else {
+          // Unknown error occurred
+          toast.add({ severity: 'error', summary: 'Conflict Error', detail: 'An unknown error occurred.', life: 5000 });
+        }
     }
-    crudDialog.value = false;
-    cruddata.value = {};
 };
 
 const editData = (editData) => {
@@ -145,7 +165,6 @@ const editData = (editData) => {
         password,
         role: { name: role }
     };
-    console.log(cruddata);
     crudDialog.value = true;
 };
 
@@ -331,6 +350,7 @@ const initFilters = () => {
                                 <label for="confirmpassword">Confirm Password</label>
                                 <Password id="confirmpassword" v-model="confirmpassword" :class="{ 'p-invalid': submitted && !confirmpassword }" />
                                 <small class="p-invalid mb-2" v-if="submitted && !confirmpassword">Confirm Pasword is required.</small>
+                                <small class="p-invalid mb-2" v-if="isMatchPassword">Password is not match.</small>
                             </div>
                         </div>
 

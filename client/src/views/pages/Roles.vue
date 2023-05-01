@@ -1,6 +1,6 @@
 <script setup>
 import { FilterMatchMode, FilterOperator } from 'primevue/api';
-import { ref, onMounted, onBeforeMount, computed } from 'vue';
+import { ref, onMounted, onBeforeMount, computed, reactive } from 'vue';
 import RoleService from '@/service/RoleService';
 import PermissionService from '@/service/PermissionService';
 import { useToast } from 'primevue/usetoast';
@@ -16,6 +16,7 @@ const crudDialog = ref(false);
 const deletecrudDialog = ref(false);
 const deletecrudsDialog = ref(false);
 const cruddata = ref({});
+const testdata = ref({});
 const selectedCruds = ref(null);
 const dt = ref(null);
 const filters = ref({});
@@ -55,6 +56,7 @@ async function doSomething() {
     if (!this.cruddata.permissions.includes(this.selectedPermission.name)) {
         toast.add({ severity: 'success', summary: 'Successful', detail: 'Added Permission Successfully', life: 3000 });
         this.cruddata.permissions.push(this.selectedPermission.name);
+        console.log(autoValue);
         const response = await axios.put(
             `/roles/${_id}`,
             {
@@ -78,6 +80,7 @@ async function doSomething2() {
     if (this.cruddata.permissions.includes(this.selectedPermission2)) {
         const index = this.cruddata.permissions.indexOf(this.selectedPermission2);
         this.cruddata.permissions.splice(index, 1);
+        //console.log(this.cruddata.permissions);
         const response = await axios.put(
             `/roles/${_id}`,
             {
@@ -206,6 +209,24 @@ const newRole = async () => {
 
 const editData = (editData) => {
     cruddata.value = { ...editData };
+    const { permissions } = editData;
+    const permissionsList = reactive(
+        permissions.map((permission) => {
+            return {
+                name: permission
+            };
+        })
+    );
+    const uniqueNames = autoValue.value.filter((name) => {
+        // check if the name exists in permissionsList
+        const exists = permissionsList.some((permission) => {
+            return permission.name === name.name;
+        });
+        // if the name doesn't exist in permissionsList, keep it
+        return !exists;
+    });
+    autoValue.value = Array.from(uniqueNames);
+
     isRolename.value = true;
     crudDialog.value = true;
 };
