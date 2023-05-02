@@ -57,15 +57,10 @@ async function doSomething() {
     if (!this.cruddata.permissions.includes(this.selectedPermission.name)) {
         toast.add({ severity: 'success', summary: 'Successful', detail: 'Added Permission Successfully', life: 3000 });
         this.cruddata.permissions.push(this.selectedPermission.name);
-        // console.log(this.autoValue);
-        // console.log(this.selectedPermission.name);
-        //const index = this.autoValue.name.indexOf(this.selectedPermission.name);
-        // this.autoValue.splice(index, 1);
- 
-        console.log(this.autoValue);
-        console.log(this.selectedPermission.name);
-        //const index = this.autoValue.name.indexOf(this.selectedPermission.name);
-      //  this.autoValue.splice(index, 1);
+        const autoValue = this.autoValue || []; // Ensure that autoValue is an array
+        const names = autoValue.map((obj) => obj.name);
+        const index = names.indexOf(this.selectedPermission.name);
+        this.autoValue.splice(index, 1);
         const response = await axios.put(
             `/roles/${_id}`,
             {
@@ -89,8 +84,7 @@ async function doSomething2() {
     if (this.cruddata.permissions.includes(this.selectedPermission2)) {
         const index = this.cruddata.permissions.indexOf(this.selectedPermission2);
         this.cruddata.permissions.splice(index, 1);
-        console.log(this.cruddata.permissions);
-        console.log(this.selectedPermission2);
+        this.autoValue.push({ name: selectedPermission2 });
         const response = await axios.put(
             `/roles/${_id}`,
             {
