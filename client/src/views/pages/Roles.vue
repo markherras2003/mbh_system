@@ -32,6 +32,7 @@ const isRolename = ref(false);
 const multiselectValues = ref([]);
 const autoValue = ref(null);
 const store = useStore();
+const repopulateAutoValue = ref(null);
 
 onBeforeMount(() => {
     initFilters();
@@ -56,7 +57,6 @@ async function doSomething() {
     if (!this.cruddata.permissions.includes(this.selectedPermission.name)) {
         toast.add({ severity: 'success', summary: 'Successful', detail: 'Added Permission Successfully', life: 3000 });
         this.cruddata.permissions.push(this.selectedPermission.name);
-        console.log(autoValue);
         const response = await axios.put(
             `/roles/${_id}`,
             {
@@ -80,7 +80,6 @@ async function doSomething2() {
     if (this.cruddata.permissions.includes(this.selectedPermission2)) {
         const index = this.cruddata.permissions.indexOf(this.selectedPermission2);
         this.cruddata.permissions.splice(index, 1);
-        //console.log(this.cruddata.permissions);
         const response = await axios.put(
             `/roles/${_id}`,
             {
@@ -104,6 +103,7 @@ onMounted(async () => {
     try {
         const data = await rolesService.getRoles();
         const permissions = await permissionService.getPermissions();
+        repopulateAutoValue.value = permissions;
         autoValue.value = permissions;
         cruddatas.value = data;
         multiselectValues.value = permissions;
@@ -209,6 +209,7 @@ const newRole = async () => {
 
 const editData = (editData) => {
     cruddata.value = { ...editData };
+    autoValue.value = repopulateAutoValue.value;
     const { permissions } = editData;
     const permissionsList = reactive(
         permissions.map((permission) => {

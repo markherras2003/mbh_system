@@ -52,7 +52,6 @@ onMounted(async () => {
         const role = await roleService.getRolename();
         cruddatas.value = data;
         roledatas.value = role;
-        console.log(roledatas);
         const response = await axios.get(`/users/${localStorage.getItem('_id')}`, {
             headers: {
                 Authorization: 'Bearer ' + localStorage.getItem('token')
@@ -66,6 +65,7 @@ onMounted(async () => {
 
 const openNew = () => {
     cruddata.value = {};
+    autoValue.value = repopulateValue.value;
     submitted.value = false;
     crudDialog.value = true;
 };
