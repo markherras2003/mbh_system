@@ -84,7 +84,7 @@ async function doSomething2() {
     if (this.cruddata.permissions.includes(this.selectedPermission2)) {
         const index = this.cruddata.permissions.indexOf(this.selectedPermission2);
         this.cruddata.permissions.splice(index, 1);
-        this.autoValue.push({ name: selectedPermission2 });
+        this.autoValue.push({ name:this.selectedPermission2});
         const response = await axios.put(
             `/roles/${_id}`,
             {
@@ -378,7 +378,7 @@ const initFilters = () => {
 
                         <div class="formgrid grid" v-if="isRolename">
                             <div class="field col">
-                                <h5>List of Permissions</h5>
+                                <h5>List of Available Permissions</h5>
                                 <Listbox class="mb-2" ref="myListbox" v-model="selectedPermission" :options="autoValue" optionLabel="name" :filter="true" id="myListbox" />
                                 <Button label="Add Permissions" icon="pi pi-plus" :disabled="!selectedPermission && selectedPermission2" class="p-button-success mr-2" @click="doSomething()" />
                             </div>
